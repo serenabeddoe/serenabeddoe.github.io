@@ -1,3 +1,1 @@
 # serenabeddoe.github.io
-
-hi
