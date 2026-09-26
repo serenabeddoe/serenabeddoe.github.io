@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYDE 671 Assignment 1</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  color: #222;
+  background: white;
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 0 18px;
+  line-height: 1.5;
+}
+h1, h2 { color: #204c68; }
+h1 { font-size: 28px; }
+h2 { font-size: 22px; margin-top: 42px; }
+h3 { font-size: 18px; margin-top: 28px; }
+img { display: block; max-width: 100%; height: auto; }
+figure { margin: 10px 0 24px; }
+figcaption { color: #555; font-size: 14px; margin-top: 6px; }
+.gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.two { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+table { border-collapse: collapse; margin: 18px 0; }
+th, td { border: 1px solid #bbb; padding: 6px 10px; text-align: left; }
+code { font-size: 0.9em; }
+#bottle-gif { height: 420px; }
+@media (max-width: 650px) {
+  .gallery, .two { grid-template-columns: 1fr; }
+  #bottle-gif { height: 260px; }
+}
+</style>
+</head>
+<body>
+<h1>SYDE 671 Assignment 1</h1>
+<p>Serena Beddoe</p>
+<p><a href="assignment1.html">Assignment 1 overview</a></p>
+<h2>Part 1: Camera perspective</h2>
+<h3>Portrait</h3>
+<p>For the first portrait I stood close to the subject and used the lowest zoom. I then stepped back and increased the zoom for each photo. The face stays about the same size across Images 1 to 5.</p>
+<div class="gallery">
+<figure><img src="media/portrait_1.jpg" alt="Portrait at position 1"><figcaption>Image 1</figcaption></figure>
+<figure><img src="media/portrait_2.jpg" alt="Portrait at position 2"><figcaption>Image 2</figcaption></figure>
+<figure><img src="media/portrait_3.jpg" alt="Portrait at position 3"><figcaption>Image 3</figcaption></figure>
+<figure><img src="media/portrait_4.jpg" alt="Portrait at position 4"><figcaption>Image 4</figcaption></figure>
+<figure><img src="media/portrait_5.jpg" alt="Portrait at position 5"><figcaption>Image 5</figcaption></figure>
+</div>
+<p>The close image makes features nearer the lens look a little larger relative to the rest of the face. Image size is proportional to focal length divided by distance. When the camera is close, the difference in distance from the lens to the nose and the ears is a larger fraction of the total distance. Stepping back reduces that difference in the projected face. Zoom brings the face back to about the same size, but it does not undo the change in perspective.</p>
+<p>The facial change is subtle here. The background letters make the change in framing easier to see.</p>
+<h3>Bench and background</h3>
+<p>I took Image 1 from farther away at 4x. I then moved toward the bench and took Image 2 at 1x. The bench is roughly the same width in both photos.</p>
+<div class="two">
+<figure><img src="media/bench_1.jpg" alt="Bench at 4x from farther away"><figcaption>Image 1: 4x, farther away</figcaption></figure>
+<figure><img src="media/bench_2.jpg" alt="Bench at 1x from closer"><figcaption>Image 2: 1x, closer</figcaption></figure>
+</div>
+<p>In Image 1 the tree and building look larger relative to the bench. The distant parts of the scene seem closer to the bench than they do in Image 2. The ratio between the distance to the bench and the distance to the background gets closer to one as the camera moves back. That makes their projected sizes more similar. The 4x zoom keeps the bench large in the frame, but the camera position is what changes the perspective. Image 2 also shows more sky and walkway because it uses the wider 1x view.</p>
+<h3>Dolly zoom</h3>
+<p>The bottle is the foreground subject for this shot. The camera moves back while the zoom increases, with the bottle kept near the same size in the frame. The background changes its size relative to the bottle.</p>
+<p>The camera model gives an approximate image height of fH/Z for an object of height H, distance Z and focal length f. Increasing both f and Z can keep f/Z almost constant for the bottle. The background is farther away, so its distance changes by a different proportion. Its apparent size changes even when the bottle stays roughly fixed.</p>
+<div id="bottle-gif"></div>
+<p><a href="assignment1.html">Back to Assignment 1</a></p>
+</body></html>

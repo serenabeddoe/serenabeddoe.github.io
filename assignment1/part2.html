@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYDE 671 Assignment 1</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  color: #222;
+  background: white;
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 0 18px;
+  line-height: 1.5;
+}
+h1, h2 { color: #204c68; }
+h1 { font-size: 28px; }
+h2 { font-size: 22px; margin-top: 42px; }
+h3 { font-size: 18px; margin-top: 28px; }
+img { display: block; max-width: 100%; height: auto; }
+figure { margin: 10px 0 24px; }
+figcaption { color: #555; font-size: 14px; margin-top: 6px; }
+.gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.two { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+table { border-collapse: collapse; margin: 18px 0; }
+th, td { border: 1px solid #bbb; padding: 6px 10px; text-align: left; }
+code { font-size: 0.9em; }
+#bottle-gif { height: 420px; }
+@media (max-width: 650px) {
+  .gallery, .two { grid-template-columns: 1fr; }
+  #bottle-gif { height: 260px; }
+}
+</style>
+</head>
+<body>
+<h1>Assignment 1: Part 2</h1>
+<p><a href="assignment1.html">Assignment 1 overview</a></p>
+<h2>Part 2: Glass plate colorization</h2>
+<h3>Preparing the glass plates</h3>
+<p>Each scan has three grayscale exposures stacked in one file. I split the top third into blue, the middle third into green, and the bottom third into red. The dimensions can differ by a row, so I resized green and red to match blue.</p>
+<div class="gallery">
+<figure><img src="media/channel_blue.jpg" alt="Blue channel exposure"><figcaption>Blue channel</figcaption></figure>
+<figure><img src="media/channel_green.jpg" alt="Green channel exposure"><figcaption>Green channel</figcaption></figure>
+<figure><img src="media/channel_red.jpg" alt="Red channel exposure"><figcaption>Red channel</figcaption></figure>
+</div>
+<p>I kept blue fixed and tested horizontal and vertical shifts for green and red. At each position, an interior crop from the moving channel is compared with the same area of blue. The lowest L2 distance gives the offset for that channel.</p>
+<p>L2 = sqrt(sum over the crop of (blue - shifted channel) squared). I scored the interior because the plate borders do not represent the scene. The reported offsets describe where the crops were sampled relative to blue. The final placement uses the opposite sign.</p>
+<figure><img src="media/trial_5_image_04.jpg" alt="Colorized train"><figcaption>Image 1: train after alignment. The plate edge remains visible.</figcaption></figure>
+<h3>Single-scale search</h3>
+<ol>
+<li><b>Split the plate.</b> I read it in grayscale. The first slice is <code>blue = img[0:int(total_rows/3)]</code>. I took the next two thirds for green and red and used <code>cv2.resize</code> to match their dimensions to blue.</li>
+<li><b>Subsample for speed.</b> I used <code>blue_subsampled = blue[::2, ::2]</code> and the same slice for green and red. It keeps every second row and column. Each L2 comparison uses about one quarter of the original pixels, which saved time. There is no blur before the slice, and the final full-size offsets are limited to even pixels.</li>
+<li><b>Set the search region.</b> The radius is <code>estimated_border_size = int(min(height, width)*0.10)</code>. The crop side is <code>size = min(height, width)-estimated_border_size*4</code>. It stays away from the plate edges. The x and y loops test offsets from the negative radius to just below the positive radius.</li>
+<li><b>Score each shift.</b> Blue stays fixed. I compare it with shifted green and red crops using <code>np.linalg.norm(blue_img_crop.astype("float32") - green_img_crop.astype("float32"))</code> and the matching red expression. I keep the lowest score for each channel.</li>
+<li><b>Return to full resolution.</b> I multiply each offset by two, for example <code>new_green_image_offset = np.array(green_image_offset)*2</code>. The output places green and red with the opposite sign of the measured crop offsets.</li>
+</ol>
+<h3>Single-scale results</h3>
+<p>I tested the train, portrait, and building plates. These offsets are in full-resolution pixels.</p>
+<figure><img src="media/single_1.jpg" alt="Single-scale colorization of 00458u"><figcaption>Image 1: 00458u. Green (-4, -42) px, red (-32, -88) px.</figcaption></figure>
+<figure><img src="media/single_2.jpg" alt="Single-scale colorization of 01657u"><figcaption>Image 2: 01657u. Green (-8, -56) px, red (-10, -118) px.</figcaption></figure>
+<figure><img src="media/single_3.jpg" alt="Single-scale colorization of 31421v"><figcaption>Image 3: 31421v. Green (0, -8) px, red (0, -14) px.</figcaption></figure>
+<h3>Coarse-to-fine search</h3>
+<ol>
+<li><b>Build the pyramid.</b> I start each channel list with the full-size image. The <code>downsample</code> loop adds <code>cv2.pyrDown(blue_img)</code> and does the same for green and red. It smooths before halving each dimension. I use three reductions when <code>max(blue_img.shape)</code> is over 1000 pixels and one otherwise.</li>
+<li><b>Search the smallest level.</b> The initial sweep is <code>xy_sweep = int(min(height, width)*0.10)</code>. The green and red estimates start at <code>[0, 0]</code>. I use the same float32 L2 comparison as before.</li>
+<li><b>Work back up.</b> The loop <code>for i in range(len(blue_pyramid)-1, -1, -1)</code> goes toward full resolution. I add a local correction and double the estimate for the next level with <code>old_green_image_offset = new_green_image_offset*2</code>. The local sweep is 10 pixels at small levels and 3 pixels above 300 pixels. The next crop side is <code>int(min(height, width)*0.6)</code>.</li>
+<li><b>Adjust intensities for matching.</b> In Trial 5 I used <code>cv2.normalize</code> to put each channel on a 0 to 255 range. I moved the green and red means toward the blue mean with <code>cv2.convertScaleAbs</code>. These adjusted arrays choose the offsets; the saved image uses the original channel values.</li>
+<li><b>Save the image.</b> I place blue at the centre of a padded canvas and place green and red using the opposite of their measured crop offsets. I left the scan borders in the output.</li>
+</ol>
+<h3>Five pyramid trials</h3>
+<p>I changed the pyramid depth, then tried intensity normalization and a mean brightness adjustment.</p>
+<table><tr><th>Trial</th><th>Large plates</th><th>Small plates</th><th>Normalize</th><th>Mean shift</th></tr>
+<tr><td>1</td><td>1</td><td>1</td><td>No</td><td>No</td></tr>
+<tr><td>2</td><td>2</td><td>2</td><td>No</td><td>No</td></tr>
+<tr><td>3</td><td>3</td><td>1</td><td>No</td><td>No</td></tr>
+<tr><td>4</td><td>3</td><td>1</td><td>Yes</td><td>No</td></tr>
+<tr><td>5</td><td>3</td><td>1</td><td>Yes</td><td>Yes</td></tr>
+</table>
+<p>Trial 1 missed the red channel on the mural (01269v). Trial 2 also missed the fruit stall (01728v). Trials 3 and 4 put the red channel far from the textile shop (01725u). Normalization alone did not fix these cases. In Trial 5, the mean brightness adjustment changed those offsets and reduced the double edges.</p>
+<h3>Examples of failed alignments</h3>
+<h4>Image 1: 01269v, Trial 1 and Trial 5</h4>
+<div class="two">
+<figure><img src="media/trial_1_image_09.jpg" alt="01269v in Trial 1"><figcaption>Trial 1. Red offset (41, -44) px.</figcaption></figure>
+<figure><img src="media/trial_5_image_09.jpg" alt="01269v in Trial 5"><figcaption>Trial 5. Red offset (-3, -14) px.</figcaption></figure>
+</div>
+<p>The mural red channel is displaced.</p>
+<h4>Image 2: 01728v, Trial 2 and Trial 5</h4>
+<div class="two">
+<figure><img src="media/trial_2_image_15.jpg" alt="01728v in Trial 2"><figcaption>Trial 2. Red offset (-34, -17) px.</figcaption></figure>
+<figure><img src="media/trial_5_image_15.jpg" alt="01728v in Trial 5"><figcaption>Trial 5. Red offset (-1, -19) px.</figcaption></figure>
+</div>
+<p>The fruit stall roof and produce are doubled.</p>
+<h4>Image 3: 01725u, Trial 3 and Trial 5</h4>
+<div class="two">
+<figure><img src="media/trial_3_image_14.jpg" alt="01725u in Trial 3"><figcaption>Trial 3. Red offset (326, -341) px.</figcaption></figure>
+<figure><img src="media/trial_5_image_14.jpg" alt="01725u in Trial 5"><figcaption>Trial 5. Red offset (-79, -162) px.</figcaption></figure>
+</div>
+<p>The red channel is far from the shop.</p>
+<h4>Image 4: 01269v, Trial 4 and Trial 5</h4>
+<div class="two">
+<figure><img src="media/trial_4_image_09.jpg" alt="01269v in Trial 4"><figcaption>Trial 4. Red offset (41, -44) px.</figcaption></figure>
+<figure><img src="media/trial_5_image_09.jpg" alt="01269v in Trial 5"><figcaption>Trial 5. Red offset (-3, -14) px.</figcaption></figure>
+</div>
+<p>Normalization alone still misses the mural.</p>
+<h3>Trial 5: Final results</h3>
+<h4>Course images</h4>
+<p>These are the Trial 5 results. I removed the blank canvas for display and left the coloured scan borders.</p>
+<div class="gallery">
+<figure><img src="media/trial_5_image_01.jpg" alt="Colorized plate 00056v"><figcaption>Image 1: 00056v</figcaption></figure>
+<figure><img src="media/trial_5_image_02.jpg" alt="Colorized plate 00125v"><figcaption>Image 2: 00125v</figcaption></figure>
+<figure><img src="media/trial_5_image_03.jpg" alt="Colorized plate 00163v"><figcaption>Image 3: 00163v</figcaption></figure>
+<figure><img src="media/trial_5_image_04.jpg" alt="Colorized plate 00458u"><figcaption>Image 4: 00458u</figcaption></figure>
+<figure><img src="media/trial_5_image_05.jpg" alt="Colorized plate 00804v"><figcaption>Image 5: 00804v</figcaption></figure>
+<figure><img src="media/trial_5_image_06.jpg" alt="Colorized plate 01007a"><figcaption>Image 6: 01007a</figcaption></figure>
+<figure><img src="media/trial_5_image_07.jpg" alt="Colorized plate 01047u"><figcaption>Image 7: 01047u</figcaption></figure>
+<figure><img src="media/trial_5_image_08.jpg" alt="Colorized plate 01164v"><figcaption>Image 8: 01164v</figcaption></figure>
+<figure><img src="media/trial_5_image_09.jpg" alt="Colorized plate 01269v"><figcaption>Image 9: 01269v</figcaption></figure>
+<figure><img src="media/trial_5_image_10.jpg" alt="Colorized plate 01522v"><figcaption>Image 10: 01522v</figcaption></figure>
+<figure><img src="media/trial_5_image_11.jpg" alt="Colorized plate 01597v"><figcaption>Image 11: 01597v</figcaption></figure>
+<figure><img src="media/trial_5_image_12.jpg" alt="Colorized plate 01598v"><figcaption>Image 12: 01598v</figcaption></figure>
+<figure><img src="media/trial_5_image_13.jpg" alt="Colorized plate 01657u"><figcaption>Image 13: 01657u</figcaption></figure>
+<figure><img src="media/trial_5_image_14.jpg" alt="Colorized plate 01725u"><figcaption>Image 14: 01725u</figcaption></figure>
+<figure><img src="media/trial_5_image_15.jpg" alt="Colorized plate 01728v"><figcaption>Image 15: 01728v</figcaption></figure>
+<figure><img src="media/trial_5_image_16.jpg" alt="Colorized plate 01861a"><figcaption>Image 16: 01861a</figcaption></figure>
+<figure><img src="media/trial_5_image_17.jpg" alt="Colorized plate 10131v"><figcaption>Image 17: 10131v</figcaption></figure>
+<figure><img src="media/trial_5_image_18.jpg" alt="Colorized plate 31421v"><figcaption>Image 18: 31421v</figcaption></figure>
+</div>
+<h4>Three additional plates</h4>
+<p>I also ran the final settings on beans, siren, and vases from the collection. I did not tune the settings separately for these images.</p>
+<div class="gallery">
+<figure><img src="media/trial_5_image_19.jpg" alt="Colorized beans"><figcaption>Image 1: beans. Green (4, -4) px, red (9, -11) px.</figcaption></figure>
+<figure><img src="media/trial_5_image_20.jpg" alt="Colorized siren"><figcaption>Image 2: siren. Green (0, -5) px, red (2, -10) px.</figcaption></figure>
+<figure><img src="media/trial_5_image_21.jpg" alt="Colorized vases"><figcaption>Image 3: vases. Green (-1, -2) px, red (-1, -12) px.</figcaption></figure>
+</div>
+<h4>Final offsets</h4>
+<p>These are the Trial 5 offsets in full-resolution pixels. Each pair is a crop position relative to blue.</p>
+<table><tr><th>Image</th><th>Plate</th><th>Green (x, y)</th><th>Red (x, y)</th></tr>
+<tr><td>1</td><td>00056v</td><td>(-1, -5)</td><td>(-1, -13)</td></tr>
+<tr><td>2</td><td>00125v</td><td>(-2, -5)</td><td>(-1, -10)</td></tr>
+<tr><td>3</td><td>00163v</td><td>(-1, 3)</td><td>(-1, 4)</td></tr>
+<tr><td>4</td><td>00458u</td><td>(-7, -42)</td><td>(-32, -86)</td></tr>
+<tr><td>5</td><td>00804v</td><td>(2, -6)</td><td>(4, -13)</td></tr>
+<tr><td>6</td><td>01007a</td><td>(-13, -59)</td><td>(-13, -128)</td></tr>
+<tr><td>7</td><td>01047u</td><td>(-20, -24)</td><td>(-34, -72)</td></tr>
+<tr><td>8</td><td>01164v</td><td>(-2, -6)</td><td>(-3, -11)</td></tr>
+<tr><td>9</td><td>01269v</td><td>(-2, -6)</td><td>(-3, -14)</td></tr>
+<tr><td>10</td><td>01522v</td><td>(-2, -6)</td><td>(-2, -13)</td></tr>
+<tr><td>11</td><td>01597v</td><td>(-1, -7)</td><td>(-1, -16)</td></tr>
+<tr><td>12</td><td>01598v</td><td>(0, -8)</td><td>(1, -17)</td></tr>
+<tr><td>13</td><td>01657u</td><td>(-8, -52)</td><td>(-13, -113)</td></tr>
+<tr><td>14</td><td>01725u</td><td>(-47, -76)</td><td>(-79, -162)</td></tr>
+<tr><td>15</td><td>01728v</td><td>(-1, -9)</td><td>(-1, -19)</td></tr>
+<tr><td>16</td><td>01861a</td><td>(-39, -70)</td><td>(-62, -147)</td></tr>
+<tr><td>17</td><td>10131v</td><td>(-2, -5)</td><td>(-3, -12)</td></tr>
+<tr><td>18</td><td>31421v</td><td>(0, -8)</td><td>(0, -14)</td></tr>
+<tr><td>19</td><td>beans</td><td>(4, -4)</td><td>(9, -11)</td></tr>
+<tr><td>20</td><td>siren</td><td>(0, -5)</td><td>(2, -10)</td></tr>
+<tr><td>21</td><td>vases</td><td>(-1, -2)</td><td>(-1, -12)</td></tr>
+</table>
+<h3>Limitations</h3>
+<p>I only estimated x and y shifts. Movement between exposures, plate damage, and differences in channel brightness can still leave colour fringes. The output also keeps the scan borders. There were no ground-truth offsets for me to calculate a numerical alignment error.</p>
+<h3>Appendix</h3>
+<p><a href="appendix.html">See all results from Trials 1 to 4</a>.</p>
+<p>Source: SYDE 671 Assignment 1 handout, adapted from Berkeley CS180 Project 1. Historical scans: Prokudin-Gorskii collection, Library of Congress.</p>
+</body></html>
