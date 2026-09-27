@@ -79,7 +79,7 @@ code { font-size: 0.9em; }
 <li>Adjust intensities for matching</li>
 <p>In trial 1-3 this was not performed, but in trial 4 and 5 I tested the effect of normalization using <code>cv2.normalize</code>. In trial 5, I tested brightness adjustment by taking the mean brightness of the blue image and moving the green and red means toward the blue mean with <code>cv2.convertScaleAbs</code>.</p>
 <li>Save the image</li>
-<p>I place blue at the centre of a padded canvas and stack green and red using the opposite of their measured crop offsets. I left the scan borders in the output.</p>
+<p>I place blue at the centre of a padded canvas and stack green and red using the opposite of their measured crop offsets. I use the original divided images, leaving the borders in the output.</p>
 </ol>
 <h3>Five pyramid trials</h3>
 <p>I changed the pyramid depth, then tried intensity normalization and a mean brightness adjustment.</p>
