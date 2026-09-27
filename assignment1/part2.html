@@ -38,20 +38,25 @@ code { font-size: 0.9em; }
 <p><a href="assignment1.html">Return to Assignment 1 Overview</a></p> 
 <p><a href="#trial5">Skip ahead to final result images (Trial 5)</a></p>
 <h2>Part 2</h2>
-<h3>Preparing the glass plates</h3>
-<p>Each scan has three grayscale exposures stacked in one file. I split the top third into blue, the middle third into green, and the bottom third into red. The dimensions can differ by a row, so I resized green and red to match blue.</p>
+<h3>Pre Image Alignment and Stacking</h3>
+<p>Each set of glass plates has three grayscale exposures: BGR from top to bottom. I split the top third into blue, the middle third into green, and the bottom third into red, but noticed that not all 3 images were always the same size. As a result, I decided to resize the green and red images to be the same size as the blue image.</p>
+<p> Here is an example of what the train set looked like split into its 3 separate parts:</p>
 <div class="gallery">
-<figure><img src="media/channel_blue.jpg" alt="Blue channel exposure"><figcaption>Blue channel</figcaption></figure>
-<figure><img src="media/channel_green.jpg" alt="Green channel exposure"><figcaption>Green channel</figcaption></figure>
-<figure><img src="media/channel_red.jpg" alt="Red channel exposure"><figcaption>Red channel</figcaption></figure>
+<figure><img src="media/channel_blue.jpg" alt="Blue channel exposure"><figcaption>Blue (top plate)</figcaption></figure>
+<figure><img src="media/channel_green.jpg" alt="Green channel exposure"><figcaption>Green (middle plate)</figcaption></figure>
+<figure><img src="media/channel_red.jpg" alt="Red channel exposure"><figcaption>Red (bottom plate)</figcaption></figure>
 </div>
-<p>I kept blue fixed and tested horizontal and vertical shifts for green and red. At each position, an interior crop from the moving channel is compared with the same area of blue. The lowest L2 distance gives the offset for that channel.</p>
-<p>L2 = sqrt(sum over the crop of (blue - shifted channel) squared). I scored the interior because the plate borders do not represent the scene. The reported offsets describe where the crops were sampled relative to blue. The final placement uses the opposite sign.</p>
-<figure><img src="media/trial_5_image_04.jpg" alt="Colorized train"><figcaption>Image 1: train after alignment. The plate edge remains visible.</figcaption></figure>
-<h3>Single-scale search</h3>
+<p>I kept the blue image fixed, and tested horizontal and vertical displacements for the green and red images. At each position, I took an interior crop from the green image and compared it with the same area of the blue image. The same activity was separately performed for the red image against the blue image as well. I chose to use euclidean distance (L2) as the metric to compare each pixel. The lowest L2 score gives the offset for that corresponding image.</p>
+<p>L2 = sqrt(sum over the crop of (blue image - shifted image) squared).</p>
+<p>I chose to score only the interior because I didn't want the plate borders, which looked different for each image, to affect the L2 score. The reported offsets describe where the crops were sampled relative to blue, but the final placement uses the opposite sign.</p>
+<p>Two methods were used to align images: single-scale alignment and multi-scale pyramid alignment.</p>
+<h3>Single-scale alignment</h3> 
+<p>The single-scale alignment method was tested on 3 images: train, woman's portrait, and building. Here is a breakdown of the steps I took to be able to perform the alignment:</p>
 <ol>
-<li>Split the plate: I read it in grayscale. The first slice is <code>blue = img[0:int(total_rows/3)]</code>. I took the next two thirds for green and red and used <code>cv2.resize</code> to match their dimensions to blue.</li>
-<li>Subsample for speed: I used <code>blue_subsampled = blue[::2, ::2]</code> and the same slice for green and red. It keeps every second row and column. Each L2 comparison uses about one quarter of the original pixels, which saved time. There is no blur before the slice, and the final full-size offsets are limited to even pixels.</li>
+<li>Split the images</li>
+<p>I read the image set in grayscale and then started by splitting the blue image using <code>blue = img[0:int(total_rows/3)]</code>. I took the next two thirds for green and red and used <code>cv2.resize</code> to match their dimensions to blue.</p>
+<li>Subsample for speed</li>
+<p>The train and the woman's portait were high resolution images and an exhaustive search would take a long time on the original images so I decided to subsample for speed. I used <code>blue_subsampled = blue[::2, ::2]</code> to keep only every other row and column for the blue image, and then did the same for the green and the red. Each L2 comparison uses about one quarter of the original pixels, which saved time.</p>
 <li>Set the search region: The radius is <code>estimated_border_size = int(min(height, width)*0.10)</code>. The crop side is <code>size = min(height, width)-estimated_border_size*4</code>. It stays away from the plate edges. The x and y loops test offsets from the negative radius to just below the positive radius.</li>
 <li>Score each shift: Blue stays fixed. I compare it with shifted green and red crops using <code>np.linalg.norm(blue_img_crop.astype("float32") - green_img_crop.astype("float32"))</code> and the matching red expression. I keep the lowest score for each channel.</li>
 <li>Return to full resolution: I multiply each offset by two, for example <code>new_green_image_offset = np.array(green_image_offset)*2</code>. The output places green and red with the opposite sign of the measured crop offsets.</li>
