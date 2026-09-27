@@ -36,7 +36,8 @@ code { font-size: 0.9em; }
 <body>
 <h1>Assignment 1: Part 2</h1>
 <p><a href="assignment1.html">Return to Assignment 1 Overview</a></p> 
-<p><a href="#trial5">Skip ahead to final result images (Trial 5)</a></p>
+<p><a href="#single-scale">Skip ahead to single-scale alignment result images</a></p>
+<p><a href="#trial5">Skip ahead to multi-scale pyramid result images (Trial 5)</a></p>
 <h2>Part 2</h2>
 <h3>Pre Image Alignment and Stacking</h3>
 <p>Each set of glass plates has three grayscale exposures: BGR from top to bottom. I split the top third into blue, the middle third into green, and the bottom third into red, but noticed that not all 3 images were always the same size. As a result, I decided to resize the green and red images to be the same size as the blue image.</p>
@@ -64,7 +65,7 @@ code { font-size: 0.9em; }
 <li>Return to full resolution</li>
 <p>I multiply each offset by two since I had originally subsampled the images by taking every other row and column only: <code>new_green_image_offset = np.array(green_image_offset)*2</code></p>
 </ol>
-<h3>Single-scale alignment results</h3>
+<h3 id="single-scale">Single-scale Alignment Results</h3>
 <p>I tested the train, woman's portrait, and building plates. These offsets are in full-resolution pixels:</p>
 <figure><img src="media/single_1.jpg" alt="Single-scale colorization of 00458u" width="50%"><figcaption>Image 1: 00458u. Green (-4, -42) px, red (-32, -88) px.</figcaption></figure>
 <figure><img src="media/single_2.jpg" alt="Single-scale colorization of 01657u" width="50%"><figcaption>Image 2: 01657u. Green (-8, -56) px, red (-10, -118) px.</figcaption></figure>
