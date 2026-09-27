@@ -64,9 +64,11 @@ code { font-size: 0.9em; }
 </ol>
 <h3 id="single-scale">Single-scale Alignment Results</h3>
 <p>I tested the train, woman's portrait, and building plates. These offsets are in full-resolution pixels:</p>
+<div class="two">
 <figure><img src="media/single_1.jpg" alt="Single-scale colorization of 00458u" width="50%"><figcaption>Image 1: 00458u. Green (-4, -42) px, red (-32, -88) px.</figcaption></figure>
 <figure><img src="media/single_2.jpg" alt="Single-scale colorization of 01657u" width="50%"><figcaption>Image 2: 01657u. Green (-8, -56) px, red (-10, -118) px.</figcaption></figure>
-<figure><img src="media/single_3.jpg" alt="Single-scale colorization of 31421v"><figcaption>Image 3: 31421v. Green (0, -8) px, red (0, -14) px.</figcaption></figure>
+<div>
+</div><figure><img src="media/single_3.jpg" alt="Single-scale colorization of 31421v"><figcaption>Image 3: 31421v. Green (0, -8) px, red (0, -14) px.</figcaption></figure>
 <h3>Multi-scale pyramid alignment</h3>
 <ol>
 <li>Build the pyramid: I start each channel list with the full-size image. The <code>downsample</code> loop adds <code>cv2.pyrDown(blue_img)</code> and does the same for green and red. It smooths before halving each dimension. I use three reductions when <code>max(blue_img.shape)</code> is over 1000 pixels and one otherwise.</li>
