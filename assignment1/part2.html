@@ -112,38 +112,21 @@ Below I will discuss what was successful, what failed in each trial, and why. I'
 <figure><img src="media/trial_3_image_14.jpg"><figcaption>Trial 3. Green offset (-47, -76) px, Red offset (326, -341) px.</figcaption></figure>
 </div>
 <li>Trial 4</li>
-  <p>Since I observed in the 3 previous trials that the downsample amount changes were not able to successfully align the 2 difficult images, I looked at the similarities between the two sets of images to see why. I noticed that these 2 sets of images were different than the others in the sense that each of the BGR sections looked very different to each other (in terms of pixel intensities). The top images looked much darker overall and the bottom images looked much ligher overall. There was less of a drastic pixel intensity difference in the other images.</p>
-
+  <p>Since I observed in the 3 previous trials that the downsample amount changes were not able to successfully align the 2 difficult images, I looked at the similarities between the two sets of images to see why. I noticed that these 2 sets of images were different than the others in the sense that each of the BGR sections looked very different to each other (in terms of pixel intensities). The top images looked much darker overall and the bottom images looked much ligher overall. There was less of a drastic pixel intensity difference in the other images. For comparison, below you can see that the train BGR set images (00458u) don't have much of a difference from each other in terms of average brightness, whereas the other 2 image sets have a much larger difference in brightness.</p>
+<div class="gallery">
+<figure><img src="media/01269v.jpg"><figcaption>BGR set of snake artwork (01269v).</figcaption></figure>
+<figure><img src="media/01725u.jpg"><figcaption>BGR set of man with textiles (01725u).</figcaption></figure>
+<figure><img src="media/00458u.jpg"><figcaption>BGR set of train (00458u).</figcaption></figure>
+</div>
+  <p>As a result, I decided to normalize each of the BGR images to see if this would help the drastic difference in intensities. Unfortunately normalization was not enough to align the snake artwork (01269v) and man with textiles (01725u) and the offset values did not change in this trial.</p>
+<div class="two">
+<figure><img src="media/trial_4_image_09.jpg"><figcaption>Trial 4. Green offset (-2, -6) px, Red offset (41, -44) px.</figcaption></figure>
+<figure><img src="media/trial_4_image_14.jpg"><figcaption>Trial 4. Green offset (-47, -76) px, Red offset (326, -341) px.</figcaption></figure>
+</div>
+<li>Trial 5</li>
+  <p>In this trial, I decided to perform a brightness adjustment. I took the mean brightness in the blue image and adjusted the green and red images to be closer to the target brightness of the blue image. This final algorithm successfully aligned all images.</p>
 </ol>
-<p>Trial 1 missed the red channel on the mural (01269v). Trial 2 also missed the fruit stall (01728v). Trials 3 and 4 put the red channel far from the textile shop (01725u). Normalization alone did not fix these cases. In Trial 5, the mean brightness adjustment changed those offsets and reduced the double edges.</p>
-<h3>Examples of failed alignments</h3>
-<h4>Image 1: 01269v, Trial 1 and Trial 5</h4>
-<div class="two">
-<figure><img src="media/trial_1_image_09.jpg" alt="01269v in Trial 1"><figcaption>Trial 1. Red offset (41, -44) px.</figcaption></figure>
-<figure><img src="media/trial_5_image_09.jpg" alt="01269v in Trial 5"><figcaption>Trial 5. Red offset (-3, -14) px.</figcaption></figure>
-</div>
-<p>The mural red channel is displaced.</p>
-<h4>Image 2: 01728v, Trial 2 and Trial 5</h4>
-<div class="two">
-<figure><img src="media/trial_2_image_15.jpg" alt="01728v in Trial 2"><figcaption>Trial 2. Red offset (-34, -17) px.</figcaption></figure>
-<figure><img src="media/trial_5_image_15.jpg" alt="01728v in Trial 5"><figcaption>Trial 5. Red offset (-1, -19) px.</figcaption></figure>
-</div>
-<p>The fruit stall roof and produce are doubled.</p>
-<h4>Image 3: 01725u, Trial 3 and Trial 5</h4>
-<div class="two">
-<figure><img src="media/trial_3_image_14.jpg" alt="01725u in Trial 3"><figcaption>Trial 3. Red offset (326, -341) px.</figcaption></figure>
-<figure><img src="media/trial_5_image_14.jpg" alt="01725u in Trial 5"><figcaption>Trial 5. Red offset (-79, -162) px.</figcaption></figure>
-</div>
-<p>The red channel is far from the shop.</p>
-<h4>Image 4: 01269v, Trial 4 and Trial 5</h4>
-<div class="two">
-<figure><img src="media/trial_4_image_09.jpg" alt="01269v in Trial 4"><figcaption>Trial 4. Red offset (41, -44) px.</figcaption></figure>
-<figure><img src="media/trial_5_image_09.jpg" alt="01269v in Trial 5"><figcaption>Trial 5. Red offset (-3, -14) px.</figcaption></figure>
-</div>
-<p>Normalization alone still misses the mural.</p>
-<h3 id="trial5">Trial 5: Final results</h3>
-<h4>Course images</h4>
-<p>These are the Trial 5 results. I removed the blank canvas for display and left the coloured scan borders.</p>
+<p>These are the Trial 5 results:</p>
 <div class="gallery">
 <figure><img src="media/trial_5_image_01.jpg" alt="Colorized plate 00056v"><figcaption>Image 1: 00056v</figcaption></figure>
 <figure><img src="media/trial_5_image_02.jpg" alt="Colorized plate 00125v"><figcaption>Image 2: 00125v</figcaption></figure>
@@ -164,8 +147,8 @@ Below I will discuss what was successful, what failed in each trial, and why. I'
 <figure><img src="media/trial_5_image_17.jpg" alt="Colorized plate 10131v"><figcaption>Image 17: 10131v</figcaption></figure>
 <figure><img src="media/trial_5_image_18.jpg" alt="Colorized plate 31421v"><figcaption>Image 18: 31421v</figcaption></figure>
 </div>
-<h4>Three additional plates</h4>
-<p>I also ran the final settings on beans, siren, and sculptures from the collection. I did not tune the settings separately for these images.</p>
+<h4>Images of My Own Choosing</h4>
+<p>I also ran the final trial 5 algorithm of a few additional images of my choosing from the same collection: beans, siren, and sculptures. I did not tune the settings separately for these images.</p>
 <div class="gallery">
 <figure><img src="media/trial_5_image_19.jpg" alt="Colorized beans"><figcaption>Image 1: beans. Green (4, -4) px, red (9, -11) px.</figcaption></figure>
 <figure><img src="media/trial_5_image_20.jpg" alt="Colorized siren"><figcaption>Image 2: siren. Green (0, -5) px, red (2, -10) px.</figcaption></figure>
@@ -196,8 +179,7 @@ Below I will discuss what was successful, what failed in each trial, and why. I'
 <tr><td>20</td><td>siren</td><td>(0, -5)</td><td>(2, -10)</td></tr>
 <tr><td>21</td><td>sculptures</td><td>(-1, -2)</td><td>(-1, -12)</td></tr>
 </table>
-<h3>Limitations</h3>
-<p>I only estimated x and y shifts. Movement between exposures, plate damage, and differences in channel brightness can still leave colour fringes. The output also keeps the scan borders. There were no ground-truth offsets for me to calculate a numerical alignment error.</p>
 <h3>Appendix</h3>
 <p><a href="appendix.html">See all results from Trials 1 to 4</a>.</p>
+<p><a href="assignment1.html">Return to Assignment 1 Overview</a></p> 
 </body></html>
