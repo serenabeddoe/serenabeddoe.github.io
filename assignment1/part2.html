@@ -64,8 +64,8 @@ code { font-size: 0.9em; }
 </ol>
 <h3 id="single-scale">Single-scale Alignment Results</h3>
 <p>I tested the train, woman's portrait, and building plates. These offsets are in full-resolution pixels:</p>
-<figure><img src="media/single_1.jpg" alt="Single-scale colorization of 00458u" width="40%"><figcaption>Image 1: 00458u. Green (-4, -42) px, red (-32, -88) px.</figcaption></figure>
-<figure><img src="media/single_2.jpg" alt="Single-scale colorization of 01657u" width="40%"><figcaption>Image 2: 01657u. Green (-8, -56) px, red (-10, -118) px.</figcaption></figure>
+<figure><img src="media/single_1.jpg" alt="Single-scale colorization of 00458u" width="45%"><figcaption>Image 1: 00458u. Green (-4, -42) px, red (-32, -88) px.</figcaption></figure>
+<figure><img src="media/single_2.jpg" alt="Single-scale colorization of 01657u" width="45%"><figcaption>Image 2: 01657u. Green (-8, -56) px, red (-10, -118) px.</figcaption></figure>
 <figure><img src="media/single_3.jpg" alt="Single-scale colorization of 31421v"><figcaption>Image 3: 31421v. Green (0, -8) px, red (0, -14) px.</figcaption></figure>
 <h3>Multi-scale pyramid alignment</h3>
 <p>Since the single-scale alignment method can be very time consuming, I also tested the multi-scale pyramid alignment method. This method was to be tested on 18 images, and a few additional plates of my choosing. I chose the beans, siren, and sculptures images. Here is a breakdown of the steps I took to be able to perform the alignment:</p>
@@ -82,14 +82,26 @@ code { font-size: 0.9em; }
 <p>I place blue at the centre of a padded canvas and stack green and red using the opposite of their measured crop offsets. I use the original divided images, leaving the borders in the output.</p>
 </ol>
 <h3>Multi-scale Pyramid Alignment Results</h3>
-<p>For the multi-scale pyramid alignment, I performed 5 trials with different parameters for each to see which images would be well-aligned in each case. I changed the pyramid depth, then tried intensity normalization and a mean brightness adjustment.</p>
-<table><tr><th>Trial</th><th>Large plates</th><th>Small plates</th><th>Normalize</th><th>Mean shift</th></tr>
+<p>For the multi-scale pyramid alignment, I performed 5 trials with different parameters for each to see which images would be well-aligned in each case. I changed the pyramid depth, then tried intensity normalization and a mean brightness adjustment. Here are the parameters that were set for each trial:</p>
+<table><tr><th>Trial</th><th>Downsample amount for large plates</th><th>Downsample amount for small plates</th><th>Normalize</th><th>Mean shift</th></tr>
 <tr><td>1</td><td>1</td><td>1</td><td>No</td><td>No</td></tr>
 <tr><td>2</td><td>2</td><td>2</td><td>No</td><td>No</td></tr>
 <tr><td>3</td><td>3</td><td>1</td><td>No</td><td>No</td></tr>
 <tr><td>4</td><td>3</td><td>1</td><td>Yes</td><td>No</td></tr>
 <tr><td>5</td><td>3</td><td>1</td><td>Yes</td><td>Yes</td></tr>
 </table>
+Below I will discuss what was successful, what failed in each trial, and why. I'll display only the failed images with the explanations. To view all images from failed trials 1-4, see the <a href="appendix.html">appendix</a>.
+<ol>
+<li>Trial 1</li>
+  <p> Starting with downsampling only once for all images, the algorithm successfully aligned all images except for snake artwork (01269v) and man with textiles (01725u)</p>
+<div class="two">
+<figure><img src="media/trial_1_image_09.jpg"><figcaption>Trial 1. Green offset (-2, -6) px, Red offset (41, -44) px.</figcaption></figure>
+<figure><img src="media/trial_1_image_14.jpg"><figcaption>Trial 1. Green offset (-47, -76) px, Red offset (322, -325) px.</figcaption></figure>
+</div>
+<li>Trial 2</li>
+  <p>To try and successfully align those 2 remaining images, I decided to try and downsample twice instead. The algorithm worked successfully for all images except for snake artwork (01269v), man with textiles (01725u), and man with fruit stand (01728v). To ensure that the man with fruit stand (01728v) would be aligned for the next trial so I could focus on the original 2 difficult images, I decided to do the next trial by downsampling only once for lower resolution images like the man with the fruit stand, and downsampling 3 times for the higher resolution images.</p>
+<
+</ol>
 <p>Trial 1 missed the red channel on the mural (01269v). Trial 2 also missed the fruit stall (01728v). Trials 3 and 4 put the red channel far from the textile shop (01725u). Normalization alone did not fix these cases. In Trial 5, the mean brightness adjustment changed those offsets and reduced the double edges.</p>
 <h3>Examples of failed alignments</h3>
 <h4>Image 1: 01269v, Trial 1 and Trial 5</h4>
