@@ -93,14 +93,27 @@ code { font-size: 0.9em; }
 Below I will discuss what was successful, what failed in each trial, and why. I'll display only the failed images with the explanations. To view all images from failed trials 1-4, see the <a href="appendix.html">appendix</a>.
 <ol>
 <li>Trial 1</li>
-  <p> Starting with downsampling only once for all images, the algorithm successfully aligned all images except for snake artwork (01269v) and man with textiles (01725u)</p>
+  <p> Starting with downsampling only once for all images, the algorithm successfully aligned all images except for snake artwork (01269v) and man with textiles (01725u).</p>
 <div class="two">
 <figure><img src="media/trial_1_image_09.jpg"><figcaption>Trial 1. Green offset (-2, -6) px, Red offset (41, -44) px.</figcaption></figure>
 <figure><img src="media/trial_1_image_14.jpg"><figcaption>Trial 1. Green offset (-47, -76) px, Red offset (322, -325) px.</figcaption></figure>
 </div>
 <li>Trial 2</li>
-  <p>To try and successfully align those 2 remaining images, I decided to try and downsample twice instead. The algorithm worked successfully for all images except for snake artwork (01269v), man with textiles (01725u), and man with fruit stand (01728v). To ensure that the man with fruit stand (01728v) would be aligned for the next trial so I could focus on the original 2 difficult images, I decided to do the next trial by downsampling only once for lower resolution images like the man with the fruit stand, and downsampling 3 times for the higher resolution images.</p>
-<
+  <p>To try and successfully align those 2 remaining images, I decided to try and downsample twice instead since it gives a smaller image to start the alignment on. The algorithm worked successfully for all images except for snake artwork (01269v), man with textiles (01725u), and man with fruit stand (01728v). To ensure that the man with fruit stand (01728v) would be aligned for the next trial so I could focus on the original 2 difficult images, I decided that for trial 3, I would downsample only once for lower resolution images like the man with the fruit stand (which I already knew from trial 1 that this would be successful), and downsample 3 times for the higher resolution images.</p>
+<div class="gallery">
+<figure><img src="media/trial_2_image_09.jpg"><figcaption>Trial 2. Green offset (-2, -6) px, Red offset (23, -53) px.</figcaption></figure>
+<figure><img src="media/trial_2_image_14.jpg"><figcaption>Trial 2. Green offset (-47, -76) px, Red offset (322, -329) px.</figcaption></figure>
+<figure><img src="media/trial_2_image_15.jpg"><figcaption>Trial 2. Green offset (-1, -9) px, Red offset (-34, -17) px.</figcaption></figure>
+</div>
+<li>Trial 3</li>
+  <p>Here I am downsampling 3 times on larger images and downsampling only once on smaller images. The man with the fruit stanad (01728v) was aligned successfuly this time, but the two difficult images remained unaligned: the snake artwork (01269v) and the man with the textiles (01725u).</p>
+<div class="two">
+<figure><img src="media/trial_3_image_09.jpg"><figcaption>Trial 3. Green offset (-2, -6) px, Red offset (41, -44) px.</figcaption></figure>
+<figure><img src="media/trial_3_image_14.jpg"><figcaption>Trial 3. Green offset (-47, -76) px, Red offset (326, -341) px.</figcaption></figure>
+</div>
+<li>Trial 4</li>
+  <p>Since I observed in the 3 previous trials that the downsample amount changes were not able to successfully align the 2 difficult images, I looked at the similarities between the two sets of images to see why. I noticed that these 2 sets of images were different than the others in the sense that each of the BGR sections looked very different to each other (in terms of pixel intensities). The top images looked much darker overall and the bottom images looked much ligher overall. There was less of a drastic pixel intensity difference in the other images.</p>
+
 </ol>
 <p>Trial 1 missed the red channel on the mural (01269v). Trial 2 also missed the fruit stall (01728v). Trials 3 and 4 put the red channel far from the textile shop (01725u). Normalization alone did not fix these cases. In Trial 5, the mean brightness adjustment changed those offsets and reduced the double edges.</p>
 <h3>Examples of failed alignments</h3>
