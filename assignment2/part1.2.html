@@ -39,12 +39,29 @@ code { font-size: 0.9em; }
 <p>This was the original camera man image:</p>
 <figure><img src="media/cameraman.jpg" width="400"><figcaption>Original Image</figcaption></figure>
 
+<h3>Partial Derivatives and Gradient Magnitude</h3>
 <p>I read the cameraman image in grayscale with <code>cv2.imread(image, cv2.IMREAD_GRAYSCALE)</code> and convolved it with the finite difference operators <code>dx = np.array([[1,0,-1]])</code> and <code>dy = dx.reshape(-1,1)</code> using <code>signal.convolve(grayscale_image, dx, mode='same')</code>. For the gradient magnitude, I combined the two partial derivatives with <code>grad = np.sqrt(dx_output_image**2 + dy_output_image**2)</code>, which shows how strong the edge is at each pixel.</p>
 <div class="gallery">
 <figure><img src="media/dx_cameraman.jpg"><figcaption>Partial derivative in x (shows brightness changes from left to right)</figcaption></figure>
 <figure><img src="media/dy_cameraman.jpg"><figcaption>Partial derivative in y (shows brightness changes from top to bottom)</figcaption></figure>
 <figure><img src="media/grad_cameraman.jpg"><figcaption>Gradiant magnitude</figcaption></figure>
 </div>
+
+<h3>Binarized Gradient Magnitude</h3>
+<p>To binarize the gradient magnitude, I went through every pixel and set it to 255 if <code>grad[i][j] >= threshold</code> and 0 otherwise. I experimented by trying different thresholds of 5, 20, 35, 50, 65 and 80 to see which was best.</p>
+<div class="gallery">
+<figure><img src="media/binarized_cameraman5.jpg"><figcaption>Threshold = 5</figcaption></figure>
+<figure><img src="mediabinarized_cameraman20.jpg"><figcaption>Threshold = 20</figcaption></figure>
+<figure><img src="media/binarized_cameraman35.jpg"><figcaption>Threshold = 35</figcaption></figure>
+</div>
+<p> I found that the lower thresholds of 5, 20, and 35 had a lot of noise (specks in the images), so I moved to higher thresholds: 
+<div class="gallery">
+<figure><img src="media/binarized_cameraman50.jpg"><figcaption>Threshold = 50 (Best Attempt)</figcaption></figure>
+<figure><img src="media/binarized_cameraman65.jpg"><figcaption>Threshold = 65</figcaption></figure>
+<figure><img src="media/binarized_cameraman80.jpg"><figcaptionThreshold = 80</figcaption></figure>
+</div>
+<p>The higher the threshold I set, I found that the images were starting to lose their edges, for example, the edges of the coat were becoming less and less visible. I think that the best representation for the binarized gradient magnitude is the threshold of 50 since it's the lowest value where the noise is almost gone while the main edges (cameraman, tripod) are still strong/visible. The tradeoff here is that with the threshold set to 50, you lose the buildings in the background since their edges are weak.</p>
+
 
   
 
