@@ -39,6 +39,7 @@ code { font-size: 0.9em; }
 <p>This is my original image:</p>
 <figure><img src="media/important.jpg" width="400"><figcaption>Original Image</figcaption></figure>
 
+<h3>Implementing Convolutions</h3>
 <p>Here is a breakdown of the steps I took to be able to perform the convolutions:</p>
 <ol>
 <li>Padding the image</li>
@@ -54,28 +55,29 @@ code { font-size: 0.9em; }
 <li>Comparing with scipy</li>
 <p>In order to compare accurately, I made sure to treat boundaries the same for the two-loop, four-loop, and scipy versions. I padded all of them with zeros (black) and made sure the outputs were all the same size by using these scipy parameters: <code>boundary="fill"</code>, <code>fillvalue=0</code>, and <code>mode="same"</code>. I ran the same filters through <code>signal.convolve2d(grayscale_image, dx, mode="same", boundary="fill", fillvalue=0)</code> and checked each result against mine with <code>np.allclose(output_image_2_dx, scipy_dx)</code>. All three filters returned <code>True</code> for both of my versions, meaning the outputs were the same. Padding the images with zeros resulted in dark borders around the box-filtered images and bright lines along the borders of the Dx and Dy outputs.</p>
 </ol>
-  
-<p> Here are my output images using 4 for loop version:</p>
+
+<h3>Output images using 4 for loop version:</h3>
 <div class="gallery">
 <figure><img src="media/4loops_dx.jpg"><figcaption>Dx</figcaption></figure>
 <figure><img src="media/4loops_dy.jpg"><figcaption>Dy</figcaption></figure>
 <figure><img src="media/4loops_nine.jpg"><figcaption>Box Filter</figcaption></figure>
 </div>
 
-<p> Here are my output images using 2 for loop version:</p>
+<h3>Output images using 2 for loop version:</h3>
 <div class="gallery">
 <figure><img src="media/2loops_dx.jpg"><figcaption>Dx</figcaption></figure>
 <figure><img src="media/2loops_dy.jpg"><figcaption>Dy</figcaption></figure>
 <figure><img src="media/2loops_nine.jpg"><figcaption>Box Filter</figcaption></figure>
 </div>
 
-<p> Here are my output images using scipy:</p>
+<h3>Output images using scipy:</h3>
 <div class="gallery">
 <figure><img src="media/scipy_dx.jpg"><figcaption>Dx</figcaption></figure>
 <figure><img src="media/scipy_dy.jpg"><figcaption>Dy</figcaption></figure>
 <figure><img src="media/scipy_nine.jpg"><figcaption>Box Filter</figcaption></figure>
 </div>
 
+<h3>Runtime Summary</h3>
 <p>I timed each method with <code>time.perf_counter()</code>. Here are the run times:</p> 
 <table><tr><th>Filter</th><th>4 For Loops</th><th>2 For Loops</th><th>Scipy</th></tr>
 <tr><td>Dx</td><td>2.924 seconds</td><td>6.140 seconds</td><td>0.037 seconds</td></tr>
