@@ -36,19 +36,55 @@ code { font-size: 0.9em; }
 
 <h2>Part 1: Fun with Filters</h2>
 <h3>1.1: Convolutions from Scratch</h3>
+<p>I implemented 2D convolutions using 4 for loops and 2 for loops and 3 different filters: Dx, Dy, and a 9x9 box filter. Here is a breakdown of the steps I took to be able to perform the convolutions:</p>
+<ol>
+<li>Padding the image</li>
+<p>I padded the image with zeros (black) so the output would come out the same size as the input. The padding on each side is half the filter size, <code>topbot_pad = int(((filter.shape[0]-1)/2))</code> and <code>leftright_pad = int(((filter.shape[1]-1)/2))</code>, and I applied it with <code>np.pad(array=image, pad_width=padding_size, mode="constant", constant_values=0)</code>.</p>
+<li>Flipping the filter</li>
+<p>Convolution applies the filter flipped, so I used <code>np.flip(filter)</code> to flip it.</p>
+<li>Convolution with 4 for loops</li>
+<p>The outer two loops go over every pixel of the original image, and the inner two loops go over every entry of the flipped filter. Each output pixel is a running sum, <code>sum += flipped[k][l] * padded_image[i+k][j+l]</code>, which I then save with <code>output_image[i][j] = sum</code>.</p>
+<li>Convolution with 2 for loopst</li>
+<p>I kept the two outer loops, but replaced the inner two loops from the 4 for loop version. For each pixel I take the section of the padded image that the filter covers, <code>group = padded_image[i:i+flipped.shape[0], j:j+flipped.shape[1]]</code>, and then multiply it by the flipped filter and add everything up with <code>np.sum(group * flipped)</code>.</p>
+<li>Filtering the photo</li>
+<p>I read my photo in grayscale with <code>cv2.imread(image, cv2.IMREAD_GRAYSCALE)</code> and made the three filters <code>dx = np.array([[1,0,-1]])</code>, <code>dy = dx.reshape(-1,1)</code>, and the box filter <code>nine = np.ones((9,9)) / 81.0</code>. Dx and Dy produce negative values, so before saving those outputs I rescaled them to 0–255 by shifting with <code>image - image.min()</code> and scaling with <code>255 * image / image.max()</code>. The box filter blurs the image, Dx picks up vertical edges, and Dy picks up horizontal edges.</p>
+<li>Comparing with scipy</li>
+<p>I ran the same filters through <code>signal.convolve2d(grayscale_image, dx, mode="same", boundary="fill", fillvalue=0)</code> and checked each result against mine with <code>np.allclose(output_image_2_dx, scipy_dx)</code>. All three filters returned <code>True</code> for both of my versions, meaning the outputs are the same.</p>
+</ol>
 
-
-<p>Each set of glass plates has three grayscale exposures: BGR from top to bottom. I split the top third into blue, the middle third into green, and the bottom third into red, but noticed that not all 3 images were always the same size. As a result, I decided to resize the green and red images to be the same size as the blue image.</p>
-<p> Here is an example of what the train set looked like split into its 3 separate parts:</p>
+<p>This is my original image:</p>
+<figure><img src="media/important.jpg"><figcaption>Original Image</figcaption></figure>
+  
+<p> Here are my output images using 4 for loop version:</p>
 <div class="gallery">
-<figure><img src="media/channel_blue.jpg" alt="Blue channel exposure"><figcaption>Blue (top plate)</figcaption></figure>
-<figure><img src="media/channel_green.jpg" alt="Green channel exposure"><figcaption>Green (middle plate)</figcaption></figure>
-<figure><img src="media/channel_red.jpg" alt="Red channel exposure"><figcaption>Red (bottom plate)</figcaption></figure>
+<figure><img src="media/4loops_dx.jpg"><figcaption>Dx</figcaption></figure>
+<figure><img src="media/4loops_dy.jpg"><figcaption>Dy</figcaption></figure>
+<figure><img src="media/4loops_nine.jpg"><figcaption>Box Filter</figcaption></figure>
 </div>
+
+<p> Here are my output images using 2 for loop version:</p>
+<div class="gallery">
+<figure><img src="media/2loops_dx.jpg"><figcaption>Dx</figcaption></figure>
+<figure><img src="media/2loops_dy.jpg"><figcaption>Dy</figcaption></figure>
+<figure><img src="media/2loops_nine.jpg"><figcaption>Box Filter</figcaption></figure>
+</div>
+
+<p> Here are my output images using scipy:</p>
+<div class="gallery">
+<figure><img src="media/scipy_dx.jpg"><figcaption>Dx</figcaption></figure>
+<figure><img src="media/scipy_dy.jpg"><figcaption>Dy</figcaption></figure>
+<figure><img src="media/scipy_nine.jpg"><figcaption>Box Filter</figcaption></figure>
+</div>
+
+<p>I timed each method with <code>time.perf_counter()</code>. Here are the run times:</p> 
+<table><tr><th>Filter</th><th>4 For Loops</th><th>2 For Loops</th><th>Scipy</th></tr>
+<tr><td>Dx</td><td>2.924 seconds</td><td>6.140 seconds</td><td>0.037 seconds</td></tr>
+<tr><td>Dy</td><td>3.709 seconds</td><td>8.764 seconds</td><td>0.034 seconds</td></tr>
+<tr><td>9x9 Box Filter</td><td>58.286 seconds</td><td>8.389 seconds</td><td>0.244 seconds</td></tr>
+</table>
+
 <p>I kept the blue image fixed, and tested horizontal and vertical displacements for the green and red images. At each position, I took an interior crop from the green image and compared it with the same area of the blue image. The same activity was separately performed for the red image against the blue image as well. I chose to use euclidean distance (L2) as the metric to compare each pixel. The lowest L2 score gives the offset for that corresponding image.</p>
-<p>L2 = sqrt(sum over the crop of (blue image - shifted image) squared).</p>
-<p>I chose to score only the interior because I didn't want the plate borders, which looked different for each image, to affect the L2 score. The reported offsets describe where the crops were sampled relative to blue, but the final placement uses the opposite sign.</p>
-<p>Two methods were used to align images: single-scale alignment and multi-scale pyramid alignment.</p>
+
 
 
 
