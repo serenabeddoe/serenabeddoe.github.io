@@ -1,1 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYDE 671 Assignment 2</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  color: #222;
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 0 18px;
+  line-height: 1.5;
+}
+h1, h2 { color: #204c68; }
+h1 { font-size: 28px; }
+h2 { font-size: 22px; margin-top: 42px; }
+h3 { font-size: 18px; margin-top: 28px; }
+img { display: block; max-width: 100%; height: auto; }
+figure { margin: 10px 0 24px; }
+figcaption { color: #555; font-size: 14px; margin-top: 6px; }
+.gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.two { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+table { border-collapse: collapse; margin: 18px 0; }
+th, td { border: 1px solid #bbb; padding: 6px 10px; text-align: left; }
+code { font-size: 0.9em; }
+@media (max-width: 650px) {
+  .gallery, .two { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<h1>Assignment 2: Part 1</h1>
+<p><a href="assignment2.html">Return to Assignment 2 Overview</a></p> 
 
+<h2>Part 1.2: Finite Difference Operator</h2>
+<p>I implemented 2D convolutions using 4 for loops and 2 for loops and 3 different filters: Dx, Dy, and a 9x9 box filter.</p>
+<p>This is my original image:</p>
+<figure><img src="media/important.jpg" width="400"><figcaption>Original Image</figcaption></figure>
+
+<p>Here is a breakdown of the steps I took to be able to perform the convolutions:</p>
+<ol>
+<li>Padding the image</li>
+<p>I padded the image with zeros (black) so the output would come out the same size as the input. The padding on each side is half the filter size, <code>topbot_pad = int(((filter.shape[0]-1)/2))</code> and <code>leftright_pad = int(((filter.shape[1]-1)/2))</code>, and I applied it with <code>np.pad(array=image, pad_width=padding_size, mode="constant", constant_values=0)</code>.</p>
+<li>Flipping the filter</li>
+<p>Convolution applies the filter flipped, so I used <code>np.flip(filter)</code> to flip it.</p>
+<li>Convolution with 4 for loops</li>
+<p>The outer two loops go over every pixel of the original image, and the inner two loops go over every entry of the flipped filter. Each output pixel is a running sum, <code>sum += flipped[k][l] * padded_image[i+k][j+l]</code>, which I then save with <code>output_image[i][j] = sum</code>.</p>
+<li>Convolution with 2 for loops</li>
+<p>I kept the two outer loops, but replaced the inner two loops from the 4 for loop version. For each pixel I take the section of the padded image that the filter covers, <code>group = padded_image[i:i+flipped.shape[0], j:j+flipped.shape[1]]</code>, and then multiply it by the flipped filter and add everything up with <code>np.sum(group * flipped)</code>.</p>
+<li>Filtering the photo</li>
+<p>I read my photo in grayscale with <code>cv2.imread(image, cv2.IMREAD_GRAYSCALE)</code> and made the three filters <code>dx = np.array([[1,0,-1]])</code>, <code>dy = dx.reshape(-1,1)</code>, and the box filter <code>nine = np.ones((9,9)) / 81.0</code>. Dx and Dy produce negative values, so before saving those outputs I rescaled them to 0–255 by shifting with <code>image - image.min()</code> and scaling with <code>255 * image / image.max()</code>. The box filter blurs the image, Dx picks up vertical edges, and Dy picks up horizontal edges.</p>
+<li>Comparing with scipy</li>
+<p>In order to compare accurately, I made sure to treat boundaries the same for the two-loop, four-loop, and scipy versions. I padded all of them with zeros (black) and made sure the outputs were all the same size by using these scipy parameters: <code>boundary="fill"</code>, <code>fillvalue=0</code>, and <code>mode="same"</code>. I ran the same filters through <code>signal.convolve2d(grayscale_image, dx, mode="same", boundary="fill", fillvalue=0)</code> and checked each result against mine with <code>np.allclose(output_image_2_dx, scipy_dx)</code>. All three filters returned <code>True</code> for both of my versions, meaning the outputs were the same. Padding the images with zeros resulted in dark borders around the box-filtered images and bright lines along the borders of the Dx and Dy outputs.</p>
+</ol>
+  
+<p> Here are my output images using 4 for loop version:</p>
+<div class="gallery">
+<figure><img src="media/4loops_dx.jpg"><figcaption>Dx</figcaption></figure>
+<figure><img src="media/4loops_dy.jpg"><figcaption>Dy</figcaption></figure>
+<figure><img src="media/4loops_nine.jpg"><figcaption>Box Filter</figcaption></figure>
+</div>
+
+<p> Here are my output images using 2 for loop version:</p>
+<div class="gallery">
+<figure><img src="media/2loops_dx.jpg"><figcaption>Dx</figcaption></figure>
+<figure><img src="media/2loops_dy.jpg"><figcaption>Dy</figcaption></figure>
+<figure><img src="media/2loops_nine.jpg"><figcaption>Box Filter</figcaption></figure>
+</div>
+
+<p> Here are my output images using scipy:</p>
+<div class="gallery">
+<figure><img src="media/scipy_dx.jpg"><figcaption>Dx</figcaption></figure>
+<figure><img src="media/scipy_dy.jpg"><figcaption>Dy</figcaption></figure>
+<figure><img src="media/scipy_nine.jpg"><figcaption>Box Filter</figcaption></figure>
+</div>
+
+<p>I timed each method with <code>time.perf_counter()</code>. Here are the run times:</p> 
+<table><tr><th>Filter</th><th>4 For Loops</th><th>2 For Loops</th><th>Scipy</th></tr>
+<tr><td>Dx</td><td>2.924 seconds</td><td>6.140 seconds</td><td>0.037 seconds</td></tr>
+<tr><td>Dy</td><td>3.709 seconds</td><td>8.764 seconds</td><td>0.034 seconds</td></tr>
+<tr><td>9x9 Box Filter</td><td>58.286 seconds</td><td>8.389 seconds</td><td>0.244 seconds</td></tr>
+</table>
+<p>The runtime was fastest for the SciPy versions because the function runs in compiled C, whereas the four-loop and two-loop versions run in interpreted Python (adds overhead on every step). The 4 for loop version was the slowest by far with the 9×9 box filter, since a bigger filter means more multiplications per pixel, each done one at a time in Python. The 2 for loop version took about the same time regardless of the filter, because its runtime mostly comes from calling NumPy once per pixel, not from the filter size. This is also why the 4 for loop version was faster than the 2 for loop version for the small Dx and Dy filters.</p>
+
+<p><a href="assignment2.html">Return to Assignment 2 Overview</a></p> 
+</body></html>
