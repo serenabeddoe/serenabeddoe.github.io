@@ -84,13 +84,5 @@ code { font-size: 0.9em; }
 </table>
 <p>The runtime was fastest for the SciPy versions because the function runs in compiled C, whereas the four-loop and two-loop versions run in interpreted Python (adds overhead on every step). The 4 for loop version was the slowest by far with the 9×9 box filter, since a bigger filter means more multiplications per pixel, each done one at a time in Python. The 2 for loop version took about the same time regardless of the filter, because its runtime mostly comes from calling NumPy once per pixel, not from the filter size. This is also why the 4 for loop version was faster than the 2 for loop version for the small Dx and Dy filters.</p>
 
-<h3>1.2: Convolutions from Scratch</h3>
-
-
-
-
-
-
-
 <p><a href="assignment2.html">Return to Assignment 2 Overview</a></p> 
 </body></html>
