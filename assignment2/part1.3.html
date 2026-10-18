@@ -69,7 +69,25 @@ code { font-size: 0.9em; }
 <h3>Finite Difference vs. Gaussian Smoothing and DoG</h3>
 <p>My DoG results (single convolution version) were identical to my blur then take derivative results (2 convolutions version). I confirmed this in my code using <code>np.allclose(dx_output_image[1:-1, 1:-1], gaussian_dx_image[1:-1, 1:-1])</code> and <code>np.allclose(dy_output_image[1:-1, 1:-1], gaussian_dy_image[1:-1, 1:-1])</code> which both returned <code>True</code> (leaving out outermost pixel to ignore differences from blurring/padding).</p>
 <p>Using the finite difference operator method gave noisy results so the intention of using Gaussian/DoG was to minimize that noise. This worked as expected and in my new results there is significantly less noise from blurring the original image first before taking the derivatives. With the finite difference operator, I saw that there were many specks especially in the low threshold images (5, 20, 35). Now with smoothing first, the specks are gone at a much lower threshold of 35 compared to the finite difference operator's threshold of 50 (where some specks still remained). This also meant that I could sacrifice less in terms of how much of the weaker edges I lose. With the finite difference operator, the strong edges like the cameraman's outline started to be less defined as the threshold got higher than 50, but now with smoothing first, and keeping a lower threshold of 35, more edges are kept, which is apparent in how much more we see in the background. Overall, every output image both before and after binarizing turned out to be less noisy, less textured, and had more thick edges, with smoothing than the finite difference operator counterpart. </p>
-
+<p>Here are the images for threshold 35 and 50 for finite difference vs. gaussian smoothing / DoG side-by-side for comparison:</p>
+<table>
+  <tr>
+    <th></th>
+    <th>Threshold = 35</th>
+    <th>Threshold = 50</th>
+  </tr>
+  <tr>
+    <th>Finite difference</th>
+    <td><img src="binarized_cameraman35.jpg" alt="Finite difference, threshold 35" width="250"></td>
+    <td><img src="binarized_cameraman50.jpg" alt="Finite difference, threshold 50" width="250"></td>
+  </tr>
+  <tr>
+    <th>Gaussian/DoG</th>
+    <td><img src="binarized_gaussian_2d_dx_dy1C35.jpg" alt="DoG, threshold 35" width="250"></td>
+    <td><img src="binarized_gaussian_2d_dx_dy1C50.jpg" alt="DoG, threshold 50" width="250"></td>
+  </tr>
+</table>
+  
 <h3>Single Convolution Version with DoG</h3>
 <div class="two">
 <figure><img src="gaussian_2d_dx1C.jpg"><figcaption>DoG filter in x</figcaption></figure>
