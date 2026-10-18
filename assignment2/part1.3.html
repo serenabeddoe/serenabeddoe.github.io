@@ -66,13 +66,20 @@ code { font-size: 0.9em; }
 </div>
 <p>Just like in Part 1.2, the higher the threshold I set, I found that the images were starting to lose their edges.</p>
 
-<h3>Differences</h3>
+<h3>Finite Difference vs. Gaussian Smoothing and DoG</h3>
+<p>My DoG results (single convolution version) were identical to my blur then take derivative results (2 convolutions version). I confirmed this in my code using <code>np.allclose(dx_output_image[1:-1, 1:-1], gaussian_dx_image[1:-1, 1:-1])</code> and <code>np.allclose(dy_output_image[1:-1, 1:-1], gaussian_dy_image[1:-1, 1:-1])</code> which both returned <code>True</code> (leaving out outermost pixel to ignore differences from blurring/padding).</p>
+<p>Using the finite difference operator method gave noisy results so the intention of using Gaussian/DoG was to minimize that noise. This worked as expected and in my new results there is significantly less noise from blurring the original image first before taking the derivatives. With the finite difference operator, I saw that there were many specks especially in the low threshold images (5, 20, 35). Now with smoothing first, the specks are gone at a much lower threshold of 35 compared to the finite difference operator's threshold of 50 (where some specks still remained). This also meant that I could sacrifice less in terms of how much of the weaker edges I lose. With the finite difference operator, the strong edges like the cameraman's outline started to be less defined as the threshold got higher than 50, but now with smoothing first, and keeping a lower threshold of 35, more edges are kept, which is apparent in how much more we see in the background. Overall, every output image both before and after binarizing turned out to be less noisy, less textured, and had more thick edges, with smoothing than the finite difference operator counterpart. </p>
 
-
-
-
-
-
+<h3>Single Convolution Version with DoG</h3>
+<divclass=2>
+<figure><img src="gaussian_2d_dx1C.jpg"><figcaption>DoG filter in x</figcaption></figure>
+<figure><img src="gaussian_2d_dy1C.jpg"><figcaption>DoG filter in y</figcaption></figure>
+</div>
+<p>I applied each DoG filter to the original image in a single convolution and computed the gradient magnitude and binarized image the same way as before, using the same threshold of 35.</p>
+<figure><img src="gaussian_dx_image1C.jpg" width="250"><figcaption>Partial derivative in x (DoG)</figcaption></figure>
+<figure><img src="gaussian_dy_image1C.jpg" width="250"><figcaption>Partial derivative in y (DoG)</figcaption></figure>
+<figure><img src="grad_gaussian_2d_dx_dy1C.jpg" width="250"><figcaption>Gradient magnitude (DoG)</figcaption></figure>
+<figure><img src="binarized_gaussian_2d_dx_dy1C35.jpg" width="250"><figcaption>Binarized with threshold = 35 (DoG)</figcaption></figure>
 
 <h3>Bells & Whistles</h3>
 <p>For bells and whistles, I needed to compute the image gradient orientations and map them with HSV. The gradient at each pixel points in the direction the brightness increases fastest. I had to show this direction as a colour without using an angle function so I gave every direction its own number, so that the number goes up steadily as the direction turns around in a circle. Since I avoided angle functions, my orientation values aren’t a real angle and each quarter of the circle is squeezed onto the same range, so the colours aren’t spread perfectly evenly, and diagonal directions get slightly more or less hue space than straight ones.</p>
