@@ -49,7 +49,7 @@ code { font-size: 0.9em; }
 <li>Filtering the photo</li>
 <p>I read my photo in grayscale with <code>cv2.imread(image, cv2.IMREAD_GRAYSCALE)</code> and made the three filters <code>dx = np.array([[1,0,-1]])</code>, <code>dy = dx.reshape(-1,1)</code>, and the box filter <code>nine = np.ones((9,9)) / 81.0</code>. Dx and Dy produce negative values, so before saving those outputs I rescaled them to 0–255 by shifting with <code>image - image.min()</code> and scaling with <code>255 * image / image.max()</code>. The box filter blurs the image, Dx picks up vertical edges, and Dy picks up horizontal edges.</p>
 <li>Comparing with scipy</li>
-<p>I ran the same filters through <code>signal.convolve2d(grayscale_image, dx, mode="same", boundary="fill", fillvalue=0)</code> and checked each result against mine with <code>np.allclose(output_image_2_dx, scipy_dx)</code>. All three filters returned <code>True</code> for both of my versions, meaning the outputs are the same.</p>
+<p>In order to compare accurately, I made sure to treat boundaries the same for the two-loop, four-loop, and scipy versions. I padded all of them with zeros (black) and made sure the outputs were all the same size by using these scipy parameters: <code>boundary="fill"</code>, <code>fillvalue=0</code>, and <code>mode="same"</code>. I ran the same filters through <code>signal.convolve2d(grayscale_image, dx, mode="same", boundary="fill", fillvalue=0)</code> and checked each result against mine with <code>np.allclose(output_image_2_dx, scipy_dx)</code>. All three filters returned <code>True</code> for both of my versions, meaning the outputs were the same. Padding the images with zeros resulted in dark borders around the box-filtered images and bright lines along the borders of the Dx and Dy outputs.</p>
 </ol>
 
 <p>This is my original image:</p>
@@ -82,8 +82,7 @@ code { font-size: 0.9em; }
 <tr><td>Dy</td><td>3.709 seconds</td><td>8.764 seconds</td><td>0.034 seconds</td></tr>
 <tr><td>9x9 Box Filter</td><td>58.286 seconds</td><td>8.389 seconds</td><td>0.244 seconds</td></tr>
 </table>
-
-<p>I kept the blue image fixed, and tested horizontal and vertical displacements for the green and red images. At each position, I took an interior crop from the green image and compared it with the same area of the blue image. The same activity was separately performed for the red image against the blue image as well. I chose to use euclidean distance (L2) as the metric to compare each pixel. The lowest L2 score gives the offset for that corresponding image.</p>
+<p>The runtime was fastest for the SciPy versions because the function runs in compiled C, whereas the four-loop and two-loop versions run in interpreted Python (adds overhead on every step). The 4 for loop version was the slowest by far with the 9×9 box filter, since a bigger filter means more multiplications per pixel, each done one at a time in Python. The 2 for loop version took about the same time regardless of the filter, because its runtime mostly comes from calling NumPy once per pixel, not from the filter size. This is also why the 4 for loop version was faster than the 2 for loop version for the small Dx and Dy filters.</p>
 
 
 
