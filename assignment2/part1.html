@@ -34,8 +34,10 @@ code { font-size: 0.9em; }
 <h1>Assignment 2: Part 1</h1>
 <p><a href="assignment2.html">Return to Assignment 2 Overview</a></p> 
 
-<h2>Part 1.1</h2>
-<h3>Pre Image Alignment and Stacking</h3>
+<h2>Part 1: Fun with Filters</h2>
+<h3>1.1: Convolutions from Scratch</h3>
+
+
 <p>Each set of glass plates has three grayscale exposures: BGR from top to bottom. I split the top third into blue, the middle third into green, and the bottom third into red, but noticed that not all 3 images were always the same size. As a result, I decided to resize the green and red images to be the same size as the blue image.</p>
 <p> Here is an example of what the train set looked like split into its 3 separate parts:</p>
 <div class="gallery">
@@ -47,39 +49,10 @@ code { font-size: 0.9em; }
 <p>L2 = sqrt(sum over the crop of (blue image - shifted image) squared).</p>
 <p>I chose to score only the interior because I didn't want the plate borders, which looked different for each image, to affect the L2 score. The reported offsets describe where the crops were sampled relative to blue, but the final placement uses the opposite sign.</p>
 <p>Two methods were used to align images: single-scale alignment and multi-scale pyramid alignment.</p>
-<h3>Single-scale Alignment</h3> 
-<p>The single-scale alignment method was to be tested on 3 images: train, woman's portrait, and building. Here is a breakdown of the steps I took to be able to perform the alignment:</p>
-<ol>
-<li>Split the images</li>
-<p>I read the image set in grayscale and then started by splitting the blue image using <code>blue = img[0:int(total_rows/3)]</code>. I took the next two thirds for green and red and used <code>cv2.resize</code> to match their dimensions to blue.</p>
-<li>Subsample for speed</li>
-<p>The train and the woman's portrait were high resolution images and an exhaustive search would take a long time on the original images so I decided to subsample for speed. I used <code>blue_subsampled = blue[::2, ::2]</code> to keep only every other row and column for the blue image, and then did the same for the green and the red. Each L2 comparison uses about one quarter of the original pixels, which saved time.</p>
-<li>Set the search region</li>
-<p>The search radius is <code>estimated_border_size = int(min(height, width)*0.10)</code> and the interior crop size is <code>size = min(height, width)-estimated_border_size*4</code>. This makes it so that it stays away from the plate borders. The x and y loops test offsets from the negative radius to just below the positive radius.</p>
-<li>Score each shift</li>
-<p>The blue image stays fixed and I compare it with the shifted green and red crops using <code>np.linalg.norm(blue_img_crop.astype("float32") - green_img_crop.astype("float32"))</code> and the same for the red. I keep the lowest L2 scores for each. </p>
-<li>Return to full resolution</li>
-<p>I multiply each offset by two since I had originally subsampled the images by taking every other row and column only: <code>new_green_image_offset = np.array(green_image_offset)*2</code></p>
-</ol>
-<h3 id="single-scale">Single-scale Alignment Results</h3>
-<p>I tested the train, woman's portrait, and building plates. These offsets are in full-resolution pixels:</p>
-<figure><img src="media/single_1.jpg" alt="Single-scale colorization of 00458u" width="45%"><figcaption>Image 1: 00458u. Green (-4, -42) px, red (-32, -88) px.</figcaption></figure>
-<figure><img src="media/single_2.jpg" alt="Single-scale colorization of 01657u" width="45%"><figcaption>Image 2: 01657u. Green (-8, -56) px, red (-10, -118) px.</figcaption></figure>
-<figure><img src="media/single_3.jpg" alt="Single-scale colorization of 31421v"><figcaption>Image 3: 31421v. Green (0, -8) px, red (0, -14) px.</figcaption></figure>
-<h3>Multi-scale Pyramid Alignment</h3>
-<p>Since the single-scale alignment method can be very time consuming, I also tested the multi-scale pyramid alignment method. This method was to be tested on 18 images, and a few additional plates of my choosing. I chose the beans, siren, and sculptures images. Here is a breakdown of the steps I took to be able to perform the alignment:</p>
-<ol>
-<li>Build the pyramid</li>
-<p>I start each channel list with the full-size image. The <code>downsample</code> loop adds <code>cv2.pyrDown(blue_img)</code> and does the same for green and red. It smooths before halving each dimension. For each trial, I change the amount of times I downsample the image, but in my final trial where all of my images are aligned well, I downsample 3 times when it is a high resolution image, for example when <code>max(blue_img.shape)</code> is over 1000 pixels, and only one time when its smaller.</p>
-<li>Search the smallest level</li>
-<p>The initial sweep is <code>xy_sweep = int(min(height, width)*0.10)</code>. The green and red estimates start at <code>[0, 0]</code>. I used the same float32 L2 comparison as used in the single-scale alignment method.</p>
-<li>Work back up the pyramid</li>
-<p>The loop <code>for i in range(len(blue_pyramid)-1, -1, -1)</code> goes toward full resolution. I added a local correction and doubled the estimate for the next level with <code>old_green_image_offset = new_green_image_offset*2</code>. The local sweep is 10 pixels at small levels and 3 pixels at larger levels. The next crop size is <code>int(min(height, width)*0.6)</code>.</p>
-<li>Adjust intensities for matching</li>
-<p>In trial 1-3 this was not performed, but in trial 4 and 5 I tested the effect of normalization using <code>cv2.normalize</code>. In trial 5, I tested brightness adjustment by taking the mean brightness of the blue image and moving the green and red means toward the blue mean with <code>cv2.convertScaleAbs</code>.</p>
-<li>Save the image</li>
-<p>I place blue at the centre of a padded canvas and stack green and red using the opposite of their measured crop offsets. I use the original divided images, leaving the borders in the output.</p>
-</ol>
+
+
+
+  
 <h3>Multi-scale Pyramid Alignment Results</h3>
 <p>For the multi-scale pyramid alignment, I performed 5 trials with different parameters for each to see which images would be well-aligned in each case. I changed the pyramid depth, then tried intensity normalization and a mean brightness adjustment. Here are the parameters that were set for each trial:</p>
 <table><tr><th>Trial</th><th>Downsample amount for large plates</th><th>Downsample amount for small plates</th><th>Normalize</th><th>Mean shift</th></tr>
@@ -89,96 +62,8 @@ code { font-size: 0.9em; }
 <tr><td>4</td><td>3</td><td>1</td><td>Yes</td><td>No</td></tr>
 <tr><td>5</td><td>3</td><td>1</td><td>Yes</td><td>Yes</td></tr>
 </table>
-Below I will discuss what was successful, what failed in each trial, and why. I'll display only the failed images with the explanations. To view all images from failed trials 1-4, see the <a href="appendix.html">appendix</a>.
-<ol>
-<li>Trial 1</li>
-  <p> Starting with downsampling only once for all images, the algorithm successfully aligned all images except for snake artwork (01269v) and man with textiles (01725u).</p>
-<div class="two">
-<figure><img src="media/trial_1_image_09.jpg"><figcaption>Trial 1. Green offset (-2, -6) px, Red offset (41, -44) px.</figcaption></figure>
-<figure><img src="media/trial_1_image_14.jpg"><figcaption>Trial 1. Green offset (-47, -76) px, Red offset (322, -325) px.</figcaption></figure>
-</div>
-<li>Trial 2</li>
-  <p>To try and successfully align those 2 remaining images, I decided to try and downsample twice instead since it gives a smaller image to start the alignment on. The algorithm worked successfully for all images except for snake artwork (01269v), man with textiles (01725u), and man with fruit stand (01728v). To ensure that the man with fruit stand (01728v) would be aligned for the next trial so I could focus on the original 2 difficult images, I decided that for trial 3, I would downsample only once for lower resolution images like the man with the fruit stand (which I already knew from trial 1 that this would be successful), and downsample 3 times for the higher resolution images.</p>
-<div class="gallery">
-<figure><img src="media/trial_2_image_09.jpg"><figcaption>Trial 2. Green offset (-2, -6) px, Red offset (23, -53) px.</figcaption></figure>
-<figure><img src="media/trial_2_image_14.jpg"><figcaption>Trial 2. Green offset (-47, -76) px, Red offset (322, -329) px.</figcaption></figure>
-<figure><img src="media/trial_2_image_15.jpg"><figcaption>Trial 2. Green offset (-1, -9) px, Red offset (-34, -17) px.</figcaption></figure>
-</div>
-<li>Trial 3</li>
-  <p>Here I am downsampling 3 times on larger images and downsampling only once on smaller images. The man with the fruit stand (01728v) was aligned successfuly this time, but the two difficult images remained unaligned: the snake artwork (01269v) and the man with textiles (01725u).</p>
-<div class="two">
-<figure><img src="media/trial_3_image_09.jpg"><figcaption>Trial 3. Green offset (-2, -6) px, Red offset (41, -44) px.</figcaption></figure>
-<figure><img src="media/trial_3_image_14.jpg"><figcaption>Trial 3. Green offset (-47, -76) px, Red offset (326, -341) px.</figcaption></figure>
-</div>
-<li>Trial 4</li>
-  <p>Since I observed in the 3 previous trials that the downsample amount changes were not able to successfully align the 2 difficult images, I looked at the similarities between the two sets of images to see why. I noticed that these 2 sets of images were different than the others in the sense that each of the BGR sections looked very different to each other (in terms of pixel intensities). The top images looked much darker overall and the bottom images looked much ligher overall. There was less of a drastic pixel intensity difference in the other images. For comparison, below you can see that the train BGR set images (00458u) don't have much of a difference from each other in terms of average brightness, whereas the other 2 image sets have a much larger difference in brightness.</p>
-<div class="gallery">
-<figure><img src="media/01269v.jpg"><figcaption>BGR set of snake artwork (01269v).</figcaption></figure>
-<figure><img src="media/01725u.jpg"><figcaption>BGR set of man with textiles (01725u).</figcaption></figure>
-<figure><img src="media/00458u.jpg"><figcaption>BGR set of train (00458u).</figcaption></figure>
-</div>
-  <p>As a result, I decided to normalize each of the BGR images to see if this would help the drastic difference in intensities. Unfortunately normalization was not enough to align the snake artwork (01269v) and man with textiles (01725u) and the offset values did not change in this trial.</p>
-<div class="two">
-<figure><img src="media/trial_4_image_09.jpg"><figcaption>Trial 4. Green offset (-2, -6) px, Red offset (41, -44) px.</figcaption></figure>
-<figure><img src="media/trial_4_image_14.jpg"><figcaption>Trial 4. Green offset (-47, -76) px, Red offset (326, -341) px.</figcaption></figure>
-</div>
-<li>Trial 5</li>
-  <p>In this trial, I decided to perform a brightness adjustment. I took the mean brightness in the blue image and adjusted the green and red images to be closer to the target brightness of the blue image. This final algorithm successfully aligned all images.</p>
-</ol>
-<p>These are the Trial 5 results:</p>
-<div class="gallery">
-<figure><img src="media/trial_5_image_01.jpg" alt="Colorized plate 00056v"><figcaption>Image 1: 00056v</figcaption></figure>
-<figure><img src="media/trial_5_image_02.jpg" alt="Colorized plate 00125v"><figcaption>Image 2: 00125v</figcaption></figure>
-<figure><img src="media/trial_5_image_03.jpg" alt="Colorized plate 00163v"><figcaption>Image 3: 00163v</figcaption></figure>
-<figure><img src="media/trial_5_image_04.jpg" alt="Colorized plate 00458u"><figcaption>Image 4: 00458u</figcaption></figure>
-<figure><img src="media/trial_5_image_05.jpg" alt="Colorized plate 00804v"><figcaption>Image 5: 00804v</figcaption></figure>
-<figure><img src="media/trial_5_image_06.jpg" alt="Colorized plate 01007a"><figcaption>Image 6: 01007a</figcaption></figure>
-<figure><img src="media/trial_5_image_07.jpg" alt="Colorized plate 01047u"><figcaption>Image 7: 01047u</figcaption></figure>
-<figure><img src="media/trial_5_image_08.jpg" alt="Colorized plate 01164v"><figcaption>Image 8: 01164v</figcaption></figure>
-<figure><img src="media/trial_5_image_09.jpg" alt="Colorized plate 01269v"><figcaption>Image 9: 01269v</figcaption></figure>
-<figure><img src="media/trial_5_image_10.jpg" alt="Colorized plate 01522v"><figcaption>Image 10: 01522v</figcaption></figure>
-<figure><img src="media/trial_5_image_11.jpg" alt="Colorized plate 01597v"><figcaption>Image 11: 01597v</figcaption></figure>
-<figure><img src="media/trial_5_image_12.jpg" alt="Colorized plate 01598v"><figcaption>Image 12: 01598v</figcaption></figure>
-<figure><img src="media/trial_5_image_13.jpg" alt="Colorized plate 01657u"><figcaption>Image 13: 01657u</figcaption></figure>
-<figure><img src="media/trial_5_image_14.jpg" alt="Colorized plate 01725u"><figcaption>Image 14: 01725u</figcaption></figure>
-<figure><img src="media/trial_5_image_15.jpg" alt="Colorized plate 01728v"><figcaption>Image 15: 01728v</figcaption></figure>
-<figure><img src="media/trial_5_image_16.jpg" alt="Colorized plate 01861a"><figcaption>Image 16: 01861a</figcaption></figure>
-<figure><img src="media/trial_5_image_17.jpg" alt="Colorized plate 10131v"><figcaption>Image 17: 10131v</figcaption></figure>
-<figure><img src="media/trial_5_image_18.jpg" alt="Colorized plate 31421v"><figcaption>Image 18: 31421v</figcaption></figure>
-</div>
-<h4>Images of My Own Choosing</h4>
-<p>I also ran the final trial 5 algorithm on a few additional images of my choosing from the same collection: beans, siren, and sculptures. I did not tune the settings separately for these images and all 3 images were successfully aligned.</p>
-<div class="gallery">
-<figure><img src="media/trial_5_image_19.jpg" alt="Colorized beans"><figcaption>Image 1: beans. Green (4, -4) px, red (9, -11) px.</figcaption></figure>
-<figure><img src="media/trial_5_image_20.jpg" alt="Colorized siren"><figcaption>Image 2: siren. Green (0, -5) px, red (2, -10) px.</figcaption></figure>
-<figure><img src="media/trial_5_image_21.jpg" alt="Colorized sculptures"><figcaption>Image 3: sculptures. Green (-1, -2) px, red (-1, -12) px.</figcaption></figure>
-</div>
-<h4>Final Offsets</h4>
-<p>These are the Trial 5 offsets in full-resolution pixels. Each pair is a crop position relative to blue.</p>
-<table><tr><th>Image</th><th>Plate</th><th>Green (x, y)</th><th>Red (x, y)</th></tr>
-<tr><td>1</td><td>00056v</td><td>(-1, -5)</td><td>(-1, -13)</td></tr>
-<tr><td>2</td><td>00125v</td><td>(-2, -5)</td><td>(-1, -10)</td></tr>
-<tr><td>3</td><td>00163v</td><td>(-1, 3)</td><td>(-1, 4)</td></tr>
-<tr><td>4</td><td>00458u</td><td>(-7, -42)</td><td>(-32, -86)</td></tr>
-<tr><td>5</td><td>00804v</td><td>(2, -6)</td><td>(4, -13)</td></tr>
-<tr><td>6</td><td>01007a</td><td>(-13, -59)</td><td>(-13, -128)</td></tr>
-<tr><td>7</td><td>01047u</td><td>(-20, -24)</td><td>(-34, -72)</td></tr>
-<tr><td>8</td><td>01164v</td><td>(-2, -6)</td><td>(-3, -11)</td></tr>
-<tr><td>9</td><td>01269v</td><td>(-2, -6)</td><td>(-3, -14)</td></tr>
-<tr><td>10</td><td>01522v</td><td>(-2, -6)</td><td>(-2, -13)</td></tr>
-<tr><td>11</td><td>01597v</td><td>(-1, -7)</td><td>(-1, -16)</td></tr>
-<tr><td>12</td><td>01598v</td><td>(0, -8)</td><td>(1, -17)</td></tr>
-<tr><td>13</td><td>01657u</td><td>(-8, -52)</td><td>(-13, -113)</td></tr>
-<tr><td>14</td><td>01725u</td><td>(-47, -76)</td><td>(-79, -162)</td></tr>
-<tr><td>15</td><td>01728v</td><td>(-1, -9)</td><td>(-1, -19)</td></tr>
-<tr><td>16</td><td>01861a</td><td>(-39, -70)</td><td>(-62, -147)</td></tr>
-<tr><td>17</td><td>10131v</td><td>(-2, -5)</td><td>(-3, -12)</td></tr>
-<tr><td>18</td><td>31421v</td><td>(0, -8)</td><td>(0, -14)</td></tr>
-<tr><td>19</td><td>beans</td><td>(4, -4)</td><td>(9, -11)</td></tr>
-<tr><td>20</td><td>siren</td><td>(0, -5)</td><td>(2, -10)</td></tr>
-<tr><td>21</td><td>sculptures</td><td>(-1, -2)</td><td>(-1, -12)</td></tr>
-</table>
+
 <h3>Appendix</h3>
 <p><a href="appendix.html">See all results from Trials 1 to 4</a>.</p>
-<p><a href="assignment1.html">Return to Assignment 1 Overview</a></p> 
+<p><a href="assignment2.html">Return to Assignment 2 Overview</a></p> 
 </body></html>
