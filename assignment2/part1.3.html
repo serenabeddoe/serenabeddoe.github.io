@@ -89,6 +89,7 @@ code { font-size: 0.9em; }
 </table>
   
 <h3>Single Convolution Version with DoG</h3>
+<p>To build the DoG filters, I convolved the 2D Gaussian with the finite difference operators using <code>signal.convolve(gaussian_2d, dx)</code> and <code>signal.convolve(gaussian_2d, dy)</code>. This combines the blur and the derivative into one filter, so I only have to use one convolution.</p>
 <div class="two">
 <figure><img src="gaussian_2d_dx1C.jpg"><figcaption>DoG filter in x</figcaption></figure>
 <figure><img src="gaussian_2d_dy1C.jpg"><figcaption>DoG filter in y</figcaption></figure>
