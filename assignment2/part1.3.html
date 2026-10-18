@@ -71,7 +71,7 @@ code { font-size: 0.9em; }
 <p>Using the finite difference operator method gave noisy results so the intention of using Gaussian/DoG was to minimize that noise. This worked as expected and in my new results there is significantly less noise from blurring the original image first before taking the derivatives. With the finite difference operator, I saw that there were many specks especially in the low threshold images (5, 20, 35). Now with smoothing first, the specks are gone at a much lower threshold of 35 compared to the finite difference operator's threshold of 50 (where some specks still remained). This also meant that I could sacrifice less in terms of how much of the weaker edges I lose. With the finite difference operator, the strong edges like the cameraman's outline started to be less defined as the threshold got higher than 50, but now with smoothing first, and keeping a lower threshold of 35, more edges are kept, which is apparent in how much more we see in the background. Overall, every output image both before and after binarizing turned out to be less noisy, less textured, and had more thick edges, with smoothing than the finite difference operator counterpart. </p>
 
 <h3>Single Convolution Version with DoG</h3>
-<divclass=2>
+<div class="two">
 <figure><img src="gaussian_2d_dx1C.jpg"><figcaption>DoG filter in x</figcaption></figure>
 <figure><img src="gaussian_2d_dy1C.jpg"><figcaption>DoG filter in y</figcaption></figure>
 </div>
