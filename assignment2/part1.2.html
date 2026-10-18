@@ -35,6 +35,24 @@ code { font-size: 0.9em; }
 <p><a href="assignment2.html">Return to Assignment 2 Overview</a></p> 
 
 <h2>Part 1.2: Finite Difference Operator</h2>
+
+<p>This was the original camera man image:</p>
+<figure><img src="media/cameraman.jpg" width="400"><figcaption>Original Image</figcaption></figure>
+
+<p>I read the cameraman image in grayscale with <code>cv2.imread(image, cv2.IMREAD_GRAYSCALE)</code> and convolved it with the finite difference operators <code>dx = np.array([[1,0,-1]])</code> and <code>dy = dx.reshape(-1,1)</code> using <code>signal.convolve(grayscale_image, dx, mode='same')</code>. For the gradient magnitude, I combined the two partial derivatives with <code>grad = np.sqrt(dx_output_image**2 + dy_output_image**2)</code>, which shows how strong the edge is at each pixel.</p>
+<div class="gallery">
+<figure><img src="media/dx_cameraman.jpg"><figcaption>Partial derivative in x (shows brightness changes from left to right)</figcaption></figure>
+<figure><img src="media/dy_cameraman.jpg"><figcaption>Partial derivative in y (shows brightness changes from top to bottom)</figcaption></figure>
+<figure><img src="media/grad_cameraman.jpg"><figcaption>Gradiant magnitude</figcaption></figure>
+</div>
+
+  
+
+
+
+
+
+  
 <p>I implemented 2D convolutions using 4 for loops and 2 for loops and 3 different filters: Dx, Dy, and a 9x9 box filter.</p>
 <p>This is my original image:</p>
 <figure><img src="media/important.jpg" width="400"><figcaption>Original Image</figcaption></figure>
