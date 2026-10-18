@@ -22,6 +22,7 @@ figure { margin: 10px 0 24px; }
 figcaption { color: #555; font-size: 14px; margin-top: 6px; }
 .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 .two { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.four { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 table { border-collapse: collapse; margin: 18px 0; }
 th, td { border: 1px solid #bbb; padding: 6px 10px; text-align: left; }
 code { font-size: 0.9em; }
@@ -95,10 +96,12 @@ code { font-size: 0.9em; }
 <figure><img src="media/gaussian_2d_dy1C.jpg"><figcaption>DoG filter in y</figcaption></figure>
 </div>
 <p>I applied each DoG filter to the original image in a single convolution and computed the gradient magnitude and binarized image the same way as before, using the same threshold of 35.</p>
+<div class="four">
 <figure><img src="media/gaussian_dx_image1C.jpg" width="250"><figcaption>Partial derivative in x (DoG)</figcaption></figure>
 <figure><img src="media/gaussian_dy_image1C.jpg" width="250"><figcaption>Partial derivative in y (DoG)</figcaption></figure>
 <figure><img src="media/grad_gaussian_2d_dx_dy1C.jpg" width="250"><figcaption>Gradient magnitude (DoG)</figcaption></figure>
 <figure><img src="media/binarized_gaussian_2d_dx_dy1C35.jpg" width="250"><figcaption>Binarized with threshold = 35 (DoG)</figcaption></figure>
+</div>
 
 <h3>Bells & Whistles</h3>
 <p>For bells and whistles, I needed to compute the image gradient orientations and map them with HSV. The gradient at each pixel points in the direction the brightness increases fastest. I had to show this direction as a colour without using an angle function so I gave every direction its own number, so that the number goes up steadily as the direction turns around in a circle. Since I avoided angle functions, my orientation values aren’t a real angle and each quarter of the circle is squeezed onto the same range, so the colours aren’t spread perfectly evenly, and diagonal directions get slightly more or less hue space than straight ones.</p>
