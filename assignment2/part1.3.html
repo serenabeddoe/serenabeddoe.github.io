@@ -78,27 +78,27 @@ code { font-size: 0.9em; }
   </tr>
   <tr>
     <th>Finite difference</th>
-    <td><img src="binarized_cameraman35.jpg" alt="Finite difference, threshold 35" width="250"></td>
-    <td><img src="binarized_cameraman50.jpg" alt="Finite difference, threshold 50" width="250"></td>
+    <td><img src="media/binarized_cameraman35.jpg" alt="Finite difference, threshold 35" width="250"></td>
+    <td><img src="media/binarized_cameraman50.jpg" alt="Finite difference, threshold 50" width="250"></td>
   </tr>
   <tr>
     <th>Gaussian/DoG</th>
-    <td><img src="binarized_gaussian_2d_dx_dy1C35.jpg" alt="DoG, threshold 35" width="250"></td>
-    <td><img src="binarized_gaussian_2d_dx_dy1C50.jpg" alt="DoG, threshold 50" width="250"></td>
+    <td><img src="media/binarized_gaussian_2d_dx_dy1C35.jpg" alt="DoG, threshold 35" width="250"></td>
+    <td><img src="media/binarized_gaussian_2d_dx_dy1C50.jpg" alt="DoG, threshold 50" width="250"></td>
   </tr>
 </table>
   
 <h3>Single Convolution Version with DoG</h3>
 <p>To build the DoG filters, I convolved the 2D Gaussian with the finite difference operators using <code>signal.convolve(gaussian_2d, dx)</code> and <code>signal.convolve(gaussian_2d, dy)</code>. This combines the blur and the derivative into one filter, so I only have to use one convolution.</p>
 <div class="two">
-<figure><img src="gaussian_2d_dx1C.jpg"><figcaption>DoG filter in x</figcaption></figure>
-<figure><img src="gaussian_2d_dy1C.jpg"><figcaption>DoG filter in y</figcaption></figure>
+<figure><img src="media/gaussian_2d_dx1C.jpg"><figcaption>DoG filter in x</figcaption></figure>
+<figure><img src="media/gaussian_2d_dy1C.jpg"><figcaption>DoG filter in y</figcaption></figure>
 </div>
 <p>I applied each DoG filter to the original image in a single convolution and computed the gradient magnitude and binarized image the same way as before, using the same threshold of 35.</p>
-<figure><img src="gaussian_dx_image1C.jpg" width="250"><figcaption>Partial derivative in x (DoG)</figcaption></figure>
-<figure><img src="gaussian_dy_image1C.jpg" width="250"><figcaption>Partial derivative in y (DoG)</figcaption></figure>
-<figure><img src="grad_gaussian_2d_dx_dy1C.jpg" width="250"><figcaption>Gradient magnitude (DoG)</figcaption></figure>
-<figure><img src="binarized_gaussian_2d_dx_dy1C35.jpg" width="250"><figcaption>Binarized with threshold = 35 (DoG)</figcaption></figure>
+<figure><img src="media/gaussian_dx_image1C.jpg" width="250"><figcaption>Partial derivative in x (DoG)</figcaption></figure>
+<figure><img src="media/gaussian_dy_image1C.jpg" width="250"><figcaption>Partial derivative in y (DoG)</figcaption></figure>
+<figure><img src="media/grad_gaussian_2d_dx_dy1C.jpg" width="250"><figcaption>Gradient magnitude (DoG)</figcaption></figure>
+<figure><img src="media/binarized_gaussian_2d_dx_dy1C35.jpg" width="250"><figcaption>Binarized with threshold = 35 (DoG)</figcaption></figure>
 
 <h3>Bells & Whistles</h3>
 <p>For bells and whistles, I needed to compute the image gradient orientations and map them with HSV. The gradient at each pixel points in the direction the brightness increases fastest. I had to show this direction as a colour without using an angle function so I gave every direction its own number, so that the number goes up steadily as the direction turns around in a circle. Since I avoided angle functions, my orientation values aren’t a real angle and each quarter of the circle is squeezed onto the same range, so the colours aren’t spread perfectly evenly, and diagonal directions get slightly more or less hue space than straight ones.</p>
