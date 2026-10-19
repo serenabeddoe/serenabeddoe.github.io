@@ -77,89 +77,53 @@ code { font-size: 0.9em; }
   <figure><img src="media/burt_orange.png", widt="300"><figcaption>Original orange</figcaption></figure>
 </div>
 
+<h4>Gaussian Stacks</h4>
+<figure><img src="media/gaussian_stack_apple.jpg" width="100%"><figcaption>Gaussian stack of the apple</figcaption></figure>
+<figure><img src="media/gaussian_stack_orange.jpg" width="100%"><figcaption>Gaussian stack of the orange</figcaption></figure>
 
-  
+<h4>Laplacian Stacks</h4>
+<figure><img src="media/laplacian_stack_apple.jpg" width="100%"><figcaption>Laplacian stack of the apple</figcaption></figure>
+<figure><img src="media/laplacian_stack_orange.jpg" width="100%"><figcaption>Laplacian stack of the orange</figcaption></figure>
 
-<h3>Full Process for Derek and Nutmeg Hybrid</h3>
-<p>For Derek and Nutmeg, I used the low-pass filter on Derek and the high-pass filter on Nutmeg.</p>
-<h4>These are the original images:</h4>
-<div class="two">
-  <figure><img src="media/DerekPicture.jpg", width="300"><figcaption>Original Derek</figcaption></figure>
-  <figure><img src="media/nutmeg.jpg", width="300"><figcaption>Original Nutmeg</figcaption></figure>
-</div>
+<h4>Recreating Figure 3.42</h4>
+<p>The first three rows are Laplacian levels 0, 2 and 4. The left column is the masked apple, the middle column is the masked orange and the right column is the two added together. The last row is all of the levels added together.</p>
+<figure><img src="media/orange_apple_figure.jpg" width="600"><figcaption>Recreation of Figure 3.42</figcaption></figure>
 
-<h4>These are the filtered images before alignment.</h4>
-<p>I rescaled the high frequency image so that negative values are visible (which is why it looks mid-gray):</p>
-<div class="two">
-  <figure><img src="media/blurred_colour_derek.jpg", width="300"><figcaption>Low-pass Derek (sigma = 12)</figcaption></figure>
-  <figure><img src="media/high_freq_nutmeg.jpg", width="300"><figcaption>High-pass Nutmeg (sigma = 6)</figcaption></figure>
-</div>
+<h4>Oraple</h4>
+<figure><img src="media/oraple.jpg" width="400"><figcaption>Oraple</figcaption></figure>
 
-<h4>These are the filtered images after alignment and the final hybrid image.</h4>
-<p>From up close you can see Nutmeg, and if you step back then from further away you see Derek.</p>
+<h3>Custom Blend 1: Capybaras (Straight Seam)</h3>
+<p>For the first custom blend I used two capybara plushies, one in a green dinosaur costume and one in a blue shark costume, with the same vertical step mask as the oraple.</p>
 <div class="gallery">
-  <figure><img src="media/aligned_derek.jpg", width="300"><figcaption>Aligned Derek</figcaption></figure>
-  <figure><img src="media/aligned_nutmeg.jpg", width="300"><figcaption>Aligned Nutmeg</figcaption></figure>
-  <figure><img src="media/hybrid_derek12_nutmeg6.jpg" width="300"><figcaption>Hybrid Derek and Nutmeg</figcaption></figure>
+  <figure><img src="media/green_capybara.jpeg"><figcaption>Original green capybara</figcaption></figure>
+  <figure><img src="media/blue_capybara.jpeg"><figcaption>Original blue capybara</figcaption></figure>
+  <figure><img src="media/capybaras.jpg"><figcaption>Blended capybaras</figcaption></figure>
+</div>
+<p>The hoods, bellies and faces join without a hard line. The face looks split because each capybara's face is slightly off-centre in its photo, so the straight seam cuts through the two faces at different places. There is also a pale bluish smudge just above the head, where the blue hood's colour spreads across the seam at the coarse levels.</p>
+
+<h3>Custom Blend 2: Chicken and Llama (Irregular Mask)</h3>
+<p>For the irregular mask, I put the llama's face onto the chicken's body. I made the mask with <code>np.ones_like</code> and drew a filled ellipse of 0s with <code>cv2.ellipse(mask, (297, 245), (80, 62), 0, 0, 360, (0, 0, 0), -1)</code>, centred on the llama's face. Inside the ellipse is the llama and everywhere else is the chicken.</p>
+<div class="gallery">
+  <figure><img src="media/chicken.jpeg"><figcaption>Original chicken</figcaption></figure>
+  <figure><img src="media/llama.jpeg"><figcaption>Original llama</figcaption></figure>
+  <figure><img src="media/chicken_llama.jpg"><figcaption>Blended chicken and llama</figcaption></figure>
 </div>
 
-<h4>Fourier Transform</h4>
-<p>These are the log magnitudes of the Fourier transforms of the two input images, the filtered images, and the hybrid image.</p>
-<div class="gallery">
-  <figure><img src="media/fourier_nutmeg_derek1.png"><figcaption>Original Derek</figcaption></figure>
-  <figure><img src="media/fourier_nutmeg_derek0.png"><figcaption>Original Nutmeg</figcaption></figure>
-  <figure><img src="media/fourier_nutmeg_derek3.png"><figcaption>Low-pass Derek</figcaption></figure>
-  <figure><img src="media/fourier_nutmeg_derek2.png"><figcaption>High-pass Nutmeg</figcaption></figure>
-  <figure><img src="media/fourier_nutmeg_derek4.png"><figcaption>Hybrid</figcaption></figure>
-</div>
-<p>For each of the plots, the centre is the lowest frequency and frequencies get higher moving outward. In the low-pass Derek plot, most of the energy is in the centre since the low-pass removes high frequencies. The opposite happens for the high-pass Nutmeg plot where the centre is weaker and the energy is more outward since the high-pass removes low frequencies. The hybrid plot is a combination of both so it shows both the strong low-freqencies in the centre and the high frequencies outward.</p>
-
-<h4>Cutoff Frequencies</h4>
-<p>I adjusted the sigma values (and subsequently the ksize values) to test whether a lower cutoff frequency (bigger sigma) or higher cutoff frequency (smaller sigma) was better for each set of images. I wanted to make sure that the amount of detail I keep from using both filters is balanced enough that the hybrid image looks appropriate. I did 5 runs where I tested 3 simga values for each of Derek and Nutmeg.</p>
-<p>Here are the results from each run:</p>
-<table>
-  <tr><th>Derek sigma (low-pass)</th><th>Nutmeg sigma (high-pass)</th><th>Result</th></tr>
-  <tr><td>sigma=6</td><td>sigma=6</td><td>Derek's eyes, nose and mouth are still sharp up close and compete with Nutmeg.</td></tr>
-  <tr><td>sigma=12</td><td>sigma=2</td><td>Nutmeg is faint up close, mostly just whiskers and fur texture over a blurry Derek.</td></tr>
-  <tr><td>sigma=12</td><td>sigma=6</td><td>Nutmeg clearly dominates up close and Derek is recognizable from far away.</td></tr>
-  <tr><td>sigma=12</td><td>sigma=12</td><td>Nutmeg is very strong up close, but her stripes and edges still show through from far away.</td></tr>
-  <tr><td>sigma=20</td><td>sigma=6</td><td>Derek is too blurry to recognize well from far away.</td></tr>
-</table>
- 
-<div class="five">
-  <figure><img src="media/hybrid_derek6_nutmeg6.jpg"><figcaption>Derek sigma = 6, Nutmeg sigma = 6</figcaption></figure>
-  <figure><img src="media/hybrid_derek12_nutmeg2.jpg"><figcaption>Derek sigma = 12, Nutmeg sigma = 2</figcaption></figure>
-  <figure><img src="media/hybrid_derek12_nutmeg6.jpg"><figcaption>Derek sigma = 12, Nutmeg sigma = 6</figcaption></figure>
-  <figure><img src="media/hybrid_derek12_nutmeg12.jpg"><figcaption>Derek sigma = 12, Nutmeg sigma = 12</figcaption></figure>
-  <figure><img src="media/hybrid_derek20_nutmeg6.jpg"><figcaption>Derek sigma = 20, Nutmeg sigma = 6</figcaption></figure>
-</div>
-<p>I chose sigma=12 for Derek and simga=6 for Nutmeg because it gave the best balance.</p>
-
-<h3>Hybrid Images Of My Choosing</h3>
-<h4>Change of expression: my dad (happy and shocked)</h4>
-<p>The happy photo is the low-frequency image (sigma = 8) and the shocked photo is the high-frequency image (sigma = 3). Up close he looks shocked, with wide eyes and raised eyebrows, and from far away he looks like he's smiling.</p>
-<div class="gallery">
-  <figure><img src="media/dad_happy.jpg"><figcaption>Original happy dad</figcaption></figure>
-  <figure><img src="media/dad_shock.jpg"><figcaption>Original shocked dad</figcaption></figure>
-  <figure><img src="media/hybrid_dad_happy8_dad_shock3.jpg"><figcaption>Hybrid</figcaption></figure>
-</div>
-<h4>Change over time: my friend Marko (younger and older)</h4>
-<p>The younger photo is the low-frequency image (sigma = 5) and the older photo is the high-frequency image (sigma = 2). These photos are much smaller than the others, so I used smaller sigma values. Up close you see older Marko with his beard and curly hair, and from far away you see younger Marko.</p>
-<div class="gallery">
-  <figure><img src="media/marko_young.jpg"><figcaption>Original younger Marko</figcaption></figure>
-  <figure><img src="media/marko_old.jpg"><figcaption>Original older Marko</figcaption></figure>
-  <figure><img src="media/hybrid_marko_colour_both.jpg"><figcaption>Hybrid</figcaption></figure>
-</div>
+<h4>Process for Chicken and Llama</h4>
+<p>This is the Laplacian stack of each image and the masked levels that created the chicken and llama blend:</p>
+<figure><img src="media/laplacian_stack_chicken.jpg" width="100%"><figcaption>Laplacian stack of the chicken</figcaption></figure>
+<figure><img src="media/laplacian_stack_llama.jpg" width="100%"><figcaption>Laplacian stack of the llama</figcaption></figure>
+<p>The layout is the same as Figure 3.42: Laplacian levels 0, 2 and 4, then all of the levels added together. The middle column is almost entirely grey because only the llama's face inside the ellipse is kept. In the bottom middle image, the face fades out into black around the soft edge of the blurred mask instead of being cut off sharply.</p>
+<figure><img src="media/chicken_llama_figure.jpg" width="600"><figcaption>Masked Laplacian levels for the chicken and llama</figcaption></figure>
 
 <h3>Bells and Whistles</h3>
-<p>To see whether colour works better for the high-frequency component, the low-frequency component, or both, I made the Marko hybrid four times, converting the low-frequency image, the high-frequency image, both, or neither to grayscale. Sigma values stayed fixed. Here are my results:</p>
-<div class="four">
-  <figure><img src="media/hybrid_marko_colour_both.jpg"><figcaption>Colour for both</figcaption></figure>
-  <figure><img src="media/hybrid_marko_colour_low.jpg"><figcaption>Colour for low frequencies only</figcaption></figure>
-  <figure><img src="media/hybrid_marko_colour_high.jpg"><figcaption>Colour for high frequencies only</figcaption></figure>
-  <figure><img src="media/hybrid_marko_colour_none.jpg"><figcaption>No colour</figcaption></figure>
+<p>To see how colour affects the blend, I made the chicken and llama blend again with both images converted to grayscale and kept everything else the same.</p>
+<div class="two">
+  <figure><img src="media/chicken_llama.jpg"><figcaption>Colour</figcaption></figure>
+  <figure><img src="media/chicken_llama_gray.jpg"><figcaption>Grayscale</figcaption></figure>
 </div>
-<p>With "colour for both" and "colour for only the low frequencies" versions, the hybrid images look very similar and relatively natural, with Marko's skin tone, green shirt and the warm background. With the "colour for only the high frequencies" version, the hybrid looks almost completely grayscale and is very similar to the "no colour" version. The only colour left is faint tinting along some edges since the high-frequency image is mostly fine edges and texture and doesn't contain much colour information. I think that the best hybrid image is the "colour for the low frequencies" version since it looks natural, and it is slightly cleaner than the "colour for both" version since it removes the coloured fringes on the edges.</p>
+<figure><img src="media/chicken_llama_figure_gray.jpg" width="600"><figcaption>Masked Laplacian levels in grayscale</figcaption></figure>
+<p>The seam is easier to see in colour. The llama's tan face and the chicken's white head are different in both colour and brightness, so the edge of the ellipse stands out. In grayscale both turn into similar light greys, so only the brightness difference is left and the edge is softer. The faint tan haze that spreads from the llama's head onto the white wall in the colour version is also much harder to notice in grayscale. However, colour is what makes each animal recognizable. The red comb and bow show that the body is a chicken, and the tan fur shows that the face is a llama. In grayscale, the comb and bow turn dark grey and the result looks more like a single plush toy than a chicken with a llama's face. I chose to keep colour because it makes the blend much more convincing, and it works best when the two images have similar colours near the seam. The capybaras are an example of this, since their faces are almost the same brown and the colour change across the seam is hard to see.</p>
 
 <p><a href="assignment2.html">Return to Assignment 2 Overview</a></p> 
 </body></html>
