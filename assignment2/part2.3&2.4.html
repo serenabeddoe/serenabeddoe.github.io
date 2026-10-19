@@ -37,25 +37,48 @@ code { font-size: 0.9em; }
 <p><a href="assignment2.html">Return to Assignment 2 Overview</a></p> 
 
 <h2>Part 2.3: Gaussian and Laplacian Stacks</h2>
-
-<h3>Making a Hybrid Image</h3>
-<p>This is a breakdown of how I made each hybrid image:</p>
+<h3>Building the Stacks</h3>
+<p>This is a breakdown of how I built the gaussian and laplacian stacks:</p>
 <ol>
-  <li>Building Gaussian Filter
-    <p>To build the Gaussian filter, I made a 1D Gaussian with <code>cv2.getGaussianKernel</code> and took the outer product with its transpose, <code>gaussian_2d = gaussian_1d @ gaussian_1d.T</code>, to get a 2D Gaussian. For every filter I used <code>ksize = 6σ + 1</code> so it covers ±3σ, which is basically the whole Gaussian.</p>
+  <li>Building Gaussian Stack
+    <p>I read each image and then divided it by 255 so that the pixel values are between 0 and 1 only. The original image is the first level of the stack. For every sima in <code>sigma = [2, 4, 8, 16, 32, 64]</code>, I made a Gaussian filter with <code>cv2.getGaussianKernel</code> and the outer product <code>gaussian_2d = gaussian_1d @ gaussian_1d.T</code>, using <code>ksize = 6σ + 1</code>. I convolved each colour channel of the previous level with this filter using <code>signal.convolve(..., mode='same')</code>, stacked the channels back together and added the result to the stack. I doubled sigma at each level to give 7 levels that get blurrier each time.</p>
   </li>
-  <li>Low-Pass Filtering One Image 
-    <p>I convolved each colour channel of one image with its Gaussian filter using <code>signal.convolve(..., mode='same')</code> and stacked the channels back together. This keeps only the low frequencies.</p>
+  <li>Building Laplacian Stack
+    <p>Each Laplacian level is one Gaussian level minus the next one, <code>gaussian_stack[i] - gaussian_stack[i+1]</code>, which keeps only the band of frequencies that was removed by that blur. For the last level I used the last Gaussian level, so that adding all of the Laplacian levels together gives back the original image.</p>
   </li>
-  <li>High-Pass Filtering The Other Image
-    <p>I blurred the other image with its own Gaussian filter and subtracted the blurred image from the original. This keeps only the high frequencies.</p>
-  </li>
-  <li>Aligning Images 
-    <p>I clicked on the left and right eye in each original image with <code>plt.ginput</code>. I padded each filtered image so the midpoint between the eyes is in the centre, scaled down whichever image had its eyes further apart so the eye distances match, rotated the high-pass image so both eye lines have the same tilt, and cropped both images to the same size.</p>
-  <li>Combining Images 
-    <p>I added the aligned low-pass and high-pass images together and clipped the result to 0–255 to ensure all of the pixels were within the representable range.</p>
+  <li>Displaying Stacks 
+    <p>The Laplacian levels have negative values, so I added 0.5 to every level except the last one and clipped the result to 0–1 (so 0 would be mid-gray). I also flipped the channels with <code>[:,:,::-1]</code> since OpenCV reads images as BGR and matplotlib displays them as RGB.</p>
   </li>
 </ol>
+
+<h2>Part 2.4: Multiresolution Bleding</h2>
+<h3>Using a Mask</h3>
+<p>This is a breakdown of how I used a mask:</p>
+<ol>
+  <li>Making the Mask
+    <p>The mask is the same size as the images and has 1s where I want the first image and 0s where I want the second image. For a vertical seam like for the oraple and my capybara example, the mask is a step function with 1s on the left half and 0s on the right half.</p>
+  </li>
+  <li>Building Gaussian Stack of the Mask
+    <p>I built a Gaussian stack of the mask with the same sigma values as the images.</p>
+  </li>
+  <li>Masking Each Level
+    <p>At every level, I multiplied the first image's Laplacian level by that level of the mask, and the second image's Laplacian level by <code>1 - mask</code>. Then I added the two masked levels together.</p>
+  </li>
+  <li>Adding the Levels
+    <p>I added all of the combined levels together to get the final blended image. Fine details are blended with a sharp mask and only mix near the seam, while the blurry levels are blended with a very wide mask and mix across a large area.</p>
+  </li>
+</ol>
+<p>I tried using 5 levels at first, but the colours still changed too suddenly across the seam. Going up to 7 levels (sigma up to 64) made the colour transition much smoother.</p>
+
+<h3>Apple and Orange</h3>
+<p>These are the original images from the paper:</p>
+<div class="two">
+  <figure><img src="media/burt_apple.png", width="300"><figcaption>Original apple</figcaption></figure>
+  <figure><img src="media/burt_orange.png", widt="300"><figcaption>Original orange</figcaption></figure>
+</div>
+
+
+  
 
 <h3>Full Process for Derek and Nutmeg Hybrid</h3>
 <p>For Derek and Nutmeg, I used the low-pass filter on Derek and the high-pass filter on Nutmeg.</p>
