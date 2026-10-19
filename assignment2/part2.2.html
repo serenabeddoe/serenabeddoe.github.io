@@ -1,1 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYDE 671 Assignment 2</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  color: #222;
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 0 18px;
+  line-height: 1.5;
+}
+h1, h2 { color: #204c68; }
+h1 { font-size: 28px; }
+h2 { font-size: 22px; margin-top: 42px; }
+h3 { font-size: 18px; margin-top: 28px; }
+img { display: block; max-width: 100%; height: auto; }
+figure { margin: 10px 0 24px; }
+figcaption { color: #555; font-size: 14px; margin-top: 6px; }
+.gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.two { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.four { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+table { border-collapse: collapse; margin: 18px 0; }
+th, td { border: 1px solid #bbb; padding: 6px 10px; text-align: left; }
+code { font-size: 0.9em; }
+@media (max-width: 650px) {
+  .gallery, .two { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<h1>Assignment 2: Part 2</h1>
+<p><a href="assignment2.html">Return to Assignment 2 Overview</a></p> 
 
+<h2>Part 2.2: Hybrid Images</h2>
+
+<h3>Making a Hybrid Image</h3>
+<p>This is a breakdown of how I made each hybrid image:</p>
+<ol>
+  <li>Building Gaussian Filter
+    <p>To build the Gaussian filter, I made a 1D Gaussian with <code>cv2.getGaussianKernel</code> and took the outer product with its transpose, <code>gaussian_2d = gaussian_1d @ gaussian_1d.T</code>, to get a 2D Gaussian. For every filter I used <code>ksize = 6σ + 1</code> so it covers ±3σ, which is basically the whole Gaussian.</p>
+  </li>
+  <li>Low-Pass Filtering One Image 
+    <p>I convolved each colour channel of one image with its Gaussian filter using <code>signal.convolve(..., mode='same')</code> and stacked the channels back together. This keeps only the low frequencies.</p>
+  </li>
+  <li>High-Pass Filtering The Other Image
+    <p>I blurred the other image with its own Gaussian filter and subtracted the blurred image from the original. This keeps only the high frequencies.</p>
+  </li>
+  <li>Aligning Images 
+    <p>I clicked on the left and right eye in each original image with <code>plt.ginput</code>. I padded each filtered image so the midpoint between the eyes is in the centre, scaled down whichever image had its eyes further apart so the eye distances match, rotated the high-pass image so both eye lines have the same tilt, and cropped both images to the same size.</p>
+  <li>Combining Images 
+    <p>I added the aligned low-pass and high-pass images together and clipped the result to 0–255 to ensure all of the pixels were within the representable range.</p>
+  </li>
+</ol>
+
+<h3>Full Process for Derek and Nutmeg Hybrid</h3>
+<p>For Derek and Nutmeg, I used the low-pass filter on Derek and the high-pass filter on Nutmeg.</p>
+<p>These are the original images:</p>
+<div class="2">
+  <figure><img src="media/DerekPicture.jpg"><figcaption>Original Derek</figcaption></figure>
+  <figure><img src="media/nutmeg.jpg"><figcaption>Original Nutmeg</figcaption></figure>
+</div>
+
+<p>These are the filtered images before alignment. I rescaled the high frequency image so that negative values are visible (which is why it looks mid-gray):</p>
+<p>In the blurred image, we lose all the fine detail on the Taj. You can no longer see much of the intricacies of the architecture. Similar with the plants/trees, they lose texture. In the high frequency image, we see all of the fine detail that we lost when blurring. You can now see the individual details on the Taj and more of the texture in the greenery. When we add a scaled amount of the high frequencies back to the original image, the details on the Taj are able to stand out more.</p>
+<div class="two">
+  <figure><img src="media/blurred_colour_derek.jpg"><figcaption>Low-pass Derek (sigma = 12)</figcaption></figure>
+  <figure><img src="media/high_freq_nutmeg.jpg"><figcaption>High-pass Nutmeg (sigma = 6)</figcaption></figure>
+</div>
+
+<p>These are the filtered images after alignment:</p>
+<div class="two">
+  <figure><img src="media/aligned_derek.jpg"><figcaption>Aligned Derek</figcaption></figure>
+  <figure><img src="media/aligned_nutmeg.jpg"><figcaption>Aligned Nutmeg</figcaption></figure>
+</div>
+
+<p>This is the final hybrid image. From up close you can see Nutmeg, and if you step back then from further away you see Derek.</p>
+<figure><img src="media/hybrid_derek12_nutmeg6.jpg" width="400"><figcaption>Hybrid Derek and Nutmeg</figcaption></figure>
+
+<h3>Fourier Transform</h3>
+<p>These are the log magnitudes of the Fourier transforms of the two input images, the filtered images, and the hybrid image.</p>
+<div class="gallery">
+  <figure><img src="media/fourier_nutmeg_derek1.png"><figcaption>Original Derek</figcaption></figure>
+  <figure><img src="media/fourier_nutmeg_derek0.png"><figcaption>Original Nutmeg</figcaption></figure>
+  <figure><img src="media/fourier_nutmeg_derek3.png"><figcaption>Low-pass Derek</figcaption></figure>
+  <figure><img src="media/fourier_nutmeg_derek2.png"><figcaption>High-pass Nutmeg</figcaption></figure>
+  <figure><img src="media/fourier_nutmeg_derek4.png"><figcaption>Hybrid</figcaption></figure>
+</div>
+<p>For each of the plots, the centre is the lowest frequency and frequencies get higher moving outward. In the low-pass Derek plot, most of the energy is in the centre since the low-pass removes high frequencies. The opposite happens for the high-pass Nutmeg plot where the centre is weaker and the energy is more outward since the high-pass removes low frequencies. The hybrid plot is a combination of both so it shows both the strong low-freqencies in the centre and the high frequencies outward.</p>
+
+<h3>Cutoff Frequencies</h3>
+<p>I adjusted the sigma values (and subsequently the ksize values) to test whether a lower cutoff frequency (bigger sigma) or higher cutoff frequency (smaller sigma) was better for each set of images. I wanted to make sure that the amount of detail I keep from using both filters is balanced enough that the hybrid image looks appropriate. I did 5 runs where I tested 3 simga values for each of Derek and Nutmeg.</p>
+<p>Here are the results from each run:</p>
+<table>
+  <tr><th>Derek sigma (low-pass)</th><th>Nutmeg sigma (high-pass)</th><th>Result</th></tr>
+  <tr><td>sigma=6</td><td>sigma=6</td><td>Derek's eyes, nose and mouth are still sharp up close and compete with Nutmeg.</td></tr>
+  <tr><td>sigma=12</td><td>sigma=2</td><td>Nutmeg is faint up close, mostly just whiskers and fur texture over a blurry Derek.</td></tr>
+  <tr><td>sigma=12</td><td>sigma=6</td><td>Nutmeg clearly dominates up close and Derek is recognizable from far away.</td></tr>
+  <tr><td>sigma=12</td><td>sigma=12</td><td>Nutmeg is very strong up close, but her stripes and edges still show through from far away.</td></tr>
+  <tr><td>sigma=20</td><td>sigma=6</td><td>Derek is too blurry to recognize well from far away.</td></tr>
+</table>
+ 
+<div class="gallery">
+  <figure><img src="media/hybrid_derek6_nutmeg6.jpg"><figcaption>Derek sigma = 6, Nutmeg sigma = 6</figcaption></figure>
+  <figure><img src="media/hybrid_derek12_nutmeg2.jpg"><figcaption>Derek sigma = 12, Nutmeg sigma = 2</figcaption></figure>
+  <figure><img src="media/hybrid_derek12_nutmeg6.jpg"><figcaption>Derek sigma = 12, Nutmeg sigma = 6</figcaption></figure>
+</div>
+<div class="gallery">
+  <figure><img src="media/hybrid_derek12_nutmeg12.jpg"><figcaption>Derek sigma = 12, Nutmeg sigma = 12</figcaption></figure>
+  <figure><img src="media/hybrid_derek20_nutmeg6.jpg"><figcaption>Derek sigma = 20, Nutmeg sigma = 6</figcaption></figure>
+</div>
+<p>I chose sigma=12 for Derek and simga=6 for Nutmeg because it gave the best balance.</p>
+
+<h3>Hybrid Images Of My Choosing</h3>
+<p><strong>Change of expression: my dad (happy and shocked).</strong> The happy photo is the low-frequency image (sigma = 8) and the shocked photo is the high-frequency image (sigma = 3). Up close he looks shocked, with wide eyes and raised eyebrows, and from far away he looks like he's smiling.</p>
+<div class="gallery">
+  <figure><img src="media/dad_happy.jpg"><figcaption>Original happy dad</figcaption></figure>
+  <figure><img src="media/dad_shock.jpg"><figcaption>Original shocked dad</figcaption></figure>
+  <figure><img src="media/hybrid_dad_happy8_dad_shock3.jpg"><figcaption>Hybrid</figcaption></figure>
+</div>
+<p><strong>Change over time: my friend Marko (younger and older).</strong> The younger photo is the low-frequency image (sigma = 5) and the older photo is the high-frequency image (sigma = 2). These photos are much smaller than the others, so I used smaller sigma values. Up close you see older Marko with his beard and curly hair, and from far away you see younger Marko.</p>
+<div class="gallery">
+  <figure><img src="media/marko_young.jpg"><figcaption>Original younger Marko</figcaption></figure>
+  <figure><img src="media/marko_old.jpg"><figcaption>Original older Marko</figcaption></figure>
+  <figure><img src="media/hybrid_marko_colour_both.jpg"><figcaption>Hybrid</figcaption></figure>
+</div>
+
+<h3>Bells and Whistles</h3>
+<p>To see whether colour works better for the high-frequency component, the low-frequency component, or both, I made the Marko hybrid four times, converting the low-frequency image, the high-frequency image, both, or neither to grayscale. Sigma values stayed fixed. Here are my results:</p>
+<div class="four">
+  <figure><img src="media/hybrid_marko_colour_both.jpg"><figcaption>Colour for both</figcaption></figure>
+  <figure><img src="media/hybrid_marko_colour_low.jpg"><figcaption>Colour for low frequencies only</figcaption></figure>
+  <figure><img src="media/hybrid_marko_colour_high.jpg"><figcaption>Colour for high frequencies only</figcaption></figure>
+  <figure><img src="media/hybrid_marko_colour_none.jpg"><figcaption>No colour</figcaption></figure>
+</div>
+
+
+
+<p><a href="assignment2.html">Return to Assignment 2 Overview</a></p> 
+</body></html>
