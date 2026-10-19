@@ -51,7 +51,7 @@ code { font-size: 0.9em; }
     <p>I subtracted the blurred image from the original image to get the high frequency image.</p>
   </li>
   <li>Making the Unsharp Mask Filter
-    <p>I made the unsharp mask filter by scaling the unit impulse by <code>(1 + multiplier)</code> and subtracting the scaled gaussian from it. <code>unsharp_mask = (1 + multiplier) * impulse - multiplier * gaussian_2d</code>, where <code>impulse</code> is a 9×9 array of zeros with a 1 in the centre (unit impulse). Sharpening the image then takes only one convolution.</p>
+    <p>I made the unsharp mask filter by scaling the unit impulse by <code>(1 + multiplier)</code> and subtracting the scaled gaussian from it. <code>unsharp_mask = (1 + multiplier) * impulse - multiplier * gaussian_2d</code>, where <code>impulse</code> is a 9×9 array of zeros with a 1 in the centre (unit impulse). Sharpening the image then takes only one convolution because convolution is linear so the blurring, subtracting and adding back high frequencies can be done in one filter.</p>
   </li>
   <li>Applying The Unsharp Mask Filter
     <p>I convolved each colour channel separately with <code>signal.convolve(channel, unsharp_mask, mode='same')</code>, stacked the channels together, and clipped the result to 0–255 to ensure all of the pixels were within the representable range.</p>
@@ -103,7 +103,7 @@ code { font-size: 0.9em; }
   <figure><img src="media/sharpened_merlin6.jpg"><figcaption>6</figcaption></figure>
   <figure><img src="media/sharpened_merlin8.jpg"><figcaption>8</figcaption></figure>
 </div>
-<p>With the multiplier set at 0.5 and 1, there's only a slight improvement to the sharpness of the images. At a multiplier of 2, the images do look visibly sharper, but the features still blend nicely and look balanced. As the multiplier grows from 4, to 6, to 8, the images started to look more and more unatural with the edges being very strong and harsh. The images looked pretty grainy at the higher multipliers since the unsharp mask filter also amplifies noise and there was a halo effect that appeared, for example, the edges of Merlin's face started to have a brighter, glowing white appearance.</p>
+<p>With the multiplier set at 0.5 and 1, there's only a slight improvement to the sharpness of the images. At a multiplier of 2, the images do look visibly sharper, but the features still blend nicely and look balanced. As the multiplier grows from 4, to 6, to 8, the images started to look more and more unnatural with the edges being very strong and harsh. The images looked pretty grainy at the higher multipliers since the unsharp mask filter also amplifies noise and there was a halo effect that appeared, for example, the edges of Merlin's face started to have a brighter, glowing white appearance.</p>
 
 <h3>Evaluating Blurring a Sharp Image and Re-Sharpening It</h3>
 <p>I blurred the original Merlin photo with the Gaussian filter and then sharpened the blurred photo with a multiplier of 2 just to see how well it would be able to recover the high frequencies that were lost in the blur.</p>
@@ -112,7 +112,7 @@ code { font-size: 0.9em; }
   <figure><img src="media/blurred_merlin.jpg"><figcaption>Blurred Merlin</figcaption></figure>
   <figure><img src="media/resharpened_merlin2.jpg"><figcaption>Resharpened Merlin (multiplier=2)</figcaption></figure>
 </div>
-<p><p>The re-sharpened image is visibly crisper than the blurred one, and the outlines of Merlin’s head, ears and eyes have more contrast again. However, the re-sharpened image doesn't match the original image. The very fine details like Merlin's strands of fur and his super thin whiskers aren't as present in the re-sharpened image and his fur looks smoother than in the original photo since blurring removed the high frequencies to an extent and the resharpening is only able to amplify the frequencies that remained. I learned through this that re-sharpening a blurry image can't restore any lost information.</p>
+<p>The re-sharpened image is visibly crisper than the blurred one, and the outlines of Merlin’s head, ears and eyes have more contrast again. However, the re-sharpened image doesn't match the original image. The very fine details like Merlin's strands of fur and his super thin whiskers aren't as present in the re-sharpened image and his fur looks smoother than in the original photo since blurring removed the high frequencies to an extent and the resharpening is only able to amplify the frequencies that remained. I learned through this that re-sharpening a blurry image can't restore any lost information.</p>
 
 <p><a href="assignment2.html">Return to Assignment 2 Overview</a></p> 
 </body></html>
