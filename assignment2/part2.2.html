@@ -60,8 +60,8 @@ code { font-size: 0.9em; }
 <p>For Derek and Nutmeg, I used the low-pass filter on Derek and the high-pass filter on Nutmeg.</p>
 <p>These are the original images:</p>
 <div class="2">
-  <figure><img src="media/DerekPicture.jpg"><figcaption>Original Derek</figcaption></figure>
-  <figure><img src="media/nutmeg.jpg"><figcaption>Original Nutmeg</figcaption></figure>
+  <figure><img src="media/DerekPicture.jpg", width="300"><figcaption>Original Derek</figcaption></figure>
+  <figure><img src="media/nutmeg.jpg", width="300"><figcaption>Original Nutmeg</figcaption></figure>
 </div>
 
 <p>These are the filtered images before alignment. I rescaled the high frequency image so that negative values are visible (which is why it looks mid-gray):</p>
@@ -70,14 +70,12 @@ code { font-size: 0.9em; }
   <figure><img src="media/high_freq_nutmeg.jpg"><figcaption>High-pass Nutmeg (sigma = 6)</figcaption></figure>
 </div>
 
-<p>These are the filtered images after alignment:</p>
-<div class="two">
-  <figure><img src="media/aligned_derek.jpg"><figcaption>Aligned Derek</figcaption></figure>
-  <figure><img src="media/aligned_nutmeg.jpg"><figcaption>Aligned Nutmeg</figcaption></figure>
+<p>These are the filtered images after alignment and the final hybrid image. From up close you can see Nutmeg, and if you step back then from further away you see Derek.</p>
+<div class="gallery">
+  <figure><img src="media/aligned_derek.jpg", width="300"><figcaption>Aligned Derek</figcaption></figure>
+  <figure><img src="media/aligned_nutmeg.jpg", width="300"><figcaption>Aligned Nutmeg</figcaption></figure>
+  <figure><img src="media/hybrid_derek12_nutmeg6.jpg" width="300"><figcaption>Hybrid Derek and Nutmeg</figcaption></figure>
 </div>
-
-<p>This is the final hybrid image. From up close you can see Nutmeg, and if you step back then from further away you see Derek.</p>
-<figure><img src="media/hybrid_derek12_nutmeg6.jpg" width="400"><figcaption>Hybrid Derek and Nutmeg</figcaption></figure>
 
 <h3>Fourier Transform</h3>
 <p>These are the log magnitudes of the Fourier transforms of the two input images, the filtered images, and the hybrid image.</p>
