@@ -44,7 +44,7 @@ code { font-size: 0.9em; }
 <ol>
 <li>Padding the image</li>
 <p>I padded the image with zeros (black) so the output would come out the same size as the input. The padding on each side is half the filter size, <code>topbot_pad = int(((filter.shape[0]-1)/2))</code> and <code>leftright_pad = int(((filter.shape[1]-1)/2))</code>, and I applied it with <code>np.pad(array=image, pad_width=padding_size, mode="constant", constant_values=0)</code>.</p>
-
+<p>As seen in 1.1.py file submitted to Learn dropbox:</p>
 <pre><code class="language-python"># determine padding size depending on filter
 def padding_size(filter):
     padding_size = (max(filter.shape)-1)/2
@@ -61,7 +61,7 @@ def add_padding(image, padding_size):
 
 <li>Flipping the filter</li>
 <p>Convolution applies the filter flipped, so I used <code>np.flip(filter)</code> to flip it.</p>
-
+<p>As seen in 1.1.py file submitted to Learn dropbox:</p>
 <pre><code class="language-python"># flip filter
 def flip_filter(filter):
     flipped_filter = np.flip(filter)
@@ -69,7 +69,7 @@ def flip_filter(filter):
 
 <li>Convolution with 4 for loops</li>
 <p>The outer two loops go over every pixel of the original image, and the inner two loops go over every entry of the flipped filter. Each output pixel is a running sum, <code>sum += flipped[k][l] * padded_image[i+k][j+l]</code>, which I then save with <code>output_image[i][j] = sum</code>.</p>
-
+<p>As seen in 1.1.py file submitted to Learn dropbox:</p>
 <pre><code class="language-python"># apply the filter through every image pixel
 def convolution_four(grayscale_image, filter):
     flipped = flip_filter(filter)
@@ -96,7 +96,7 @@ def convolution_four(grayscale_image, filter):
   
 <li>Convolution with 2 for loops</li>
 <p>I kept the two outer loops, but replaced the inner two loops from the 4 for loop version. For each pixel I take the section of the padded image that the filter covers, <code>group = padded_image[i:i+flipped.shape[0], j:j+flipped.shape[1]]</code>, and then multiply it by the flipped filter and add everything up with <code>np.sum(group * flipped)</code>.</p>
-
+<p>As seen in 1.1.py file submitted to Learn dropbox:</p>
 <pre><code class="language-python">def convolution_two(grayscale_image, filter):
     flipped = flip_filter(filter)
     padded_image = add_padding(grayscale_image, padding_size(filter))
@@ -115,7 +115,7 @@ def convolution_four(grayscale_image, filter):
 
 <li>Filtering the photo</li>
 <p>I read my photo in grayscale with <code>cv2.imread(image, cv2.IMREAD_GRAYSCALE)</code> and made the three filters <code>dx = np.array([[1,0,-1]])</code>, <code>dy = dx.reshape(-1,1)</code>, and the box filter <code>nine = np.ones((9,9)) / 81.0</code>. Dx and Dy produce negative values, so before saving those outputs I rescaled them to 0–255 by shifting with <code>image - image.min()</code> and scaling with <code>255 * image / image.max()</code>. The box filter blurs the image, Dx picks up vertical edges, and Dy picks up horizontal edges.</p>
-
+<p>As seen in 1.1.py file submitted to Learn dropbox:</p>
 <pre><code class="language-python"># create filters
 dx = np.array([[1,0,-1]])
 dy = dx.reshape(-1,1)
