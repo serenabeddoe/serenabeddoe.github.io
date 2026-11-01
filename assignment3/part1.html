@@ -198,6 +198,7 @@ def warpImageNearestNeighbor(image, H):
 <h3>Rectified images</h3>
 <figure><img src="media/houses1rectified_warp.png"><figcaption>Houses1 rectified with nearest neighbour and bilinear interpolation</figcaption></figure>
 <figure><img src="media/houses2rectified_warp.png"><figcaption>Houses2 rectified with nearest neighbour and bilinear interpolation</figcaption></figure>
+<p>For houses1, I clicked the 4 corners of the upper left window on the front of the corner townhouse, and for houses2 I clicked the 4 corners of the side of the white trailer. Since both are rectangles in real life, I mapped each set of clicks to a rectangle with the average width and height of the clicked sides, starting at the top left click. After warping, the window and the side of the trailer are both rectangles. Both objects were already close to facing the camera, so they only change slightly, while the rest of each photo moves much more. This is strongest in houses1, where the window is only about 50 x 90 pixels, so a small clicking error spreads across the whole image and turns it into a trapezoid.</p>
 
 <h3>Rectification homographies</h3>
 <pre><code>H (houses1 rectification) =
@@ -209,7 +210,7 @@ H (houses2 rectification) =
 [[ 1.142715e+00  4.665246e-02 -2.487267e+01]
  [ 2.084963e-01  1.169052e+00 -5.353969e+01]
  [ 3.957223e-04  1.234901e-04  1.000000e+00]]</code></pre>
-
+  
 <h3>Quality and Speed</h3>
 <table><tr><th>Image</th><th>Nearest Neighbour</th><th>Bilinear</th></tr>
 <tr><td>Houses1</td><td>4.17 seconds</td><td>3.71 seconds</td></tr>
