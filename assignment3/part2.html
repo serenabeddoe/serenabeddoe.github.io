@@ -35,125 +35,68 @@ code { font-size: 0.9em; }
 <p><a href="assignment3.html">Return to Assignment 3 Overview</a></p> 
 
 <h2>Part 1 B.1: Harris Corner Detection</h2>
-<p>I implemented 2D convolutions using 4 for loops and 2 for loops and 3 different filters: Dx, Dy, and a 9x9 box filter.</p>
-<p>This is my original image:</p>
-<figure><img src="media/important.jpg" width="400"><figcaption>Original Image</figcaption></figure>
 
-<h3>Implementing Convolutions</h3>
-<p>Here is a breakdown of the steps I took to be able to perform the convolutions:</p>
-<ol>
-<li>Padding the image</li>
-<p>I padded the image with zeros (black) so the output would come out the same size as the input. The padding on each side is half the filter size, <code>topbot_pad = int(((filter.shape[0]-1)/2))</code> and <code>leftright_pad = int(((filter.shape[1]-1)/2))</code>, and I applied it with <code>np.pad(array=image, pad_width=padding_size, mode="constant", constant_values=0)</code>.</p>
-<p>As seen in 1.1.py file submitted to Learn dropbox:</p>
-<pre><code class="language-python"># determine padding size depending on filter
-def padding_size(filter):
-    padding_size = (max(filter.shape)-1)/2
-    topbot_pad = int(((filter.shape[0]-1)/2))
-    leftright_pad = int(((filter.shape[1]-1)/2))
+<h3>Corners With and Without ANMS</h3>
+<div class="two">
+<figure><img src="media/kitchen1_harris.png"><figcaption>Kitchen1 without ANMS</figcaption></figure>
+<figure><img src="media/kitchen1anms_harris.png"><figcaption>Kitchen1 with ANMS</figcaption></figure>
+</div>
+<div class="two">
+<figure><img src="media/kitchen2_harris.png"><figcaption>Kitchen2 without ANMS</figcaption></figure>
+<figure><img src="media/kitchen2anms_harris.png"><figcaption>Kitchen2 with ANMS</figcaption></figure>
+</div>
+<div class="two">
+<figure><img src="media/kitchen3_harris.png"><figcaption>Kitchen3 without ANMS</figcaption></figure>
+<figure><img src="media/kitchen3anms_harris.png"><figcaption>Kitchen3 with ANMS</figcaption></figure>
+</div>
+<p>Without ANMS, the Harris detector keeps every local maximum, so all three kitchen photos are almost completely covered in corners, including the plain ceiling and the empty wall on the left of kitchen1, where there isn't anything worth matching. After keeping the 2500 strongest and running ANMS down to 500, the corners move onto the parts of the kitchen with real structure like the corners of the white cabinet doors, the door handles, the oven frame in kitchen1, the exhaust in kitchen2 and kitchen3, and the pans/bottles on the counter. The ceiling is left almost empty (only one corner in each photo), and the corners are spread across the whole kitchen instead of piling up on the busy countertop. The patterned towel at the bottom of kitchen2 and kitchen3 still gets a tight cluster, since its pattern has many strong corners close together, and in kitchen3 the edge of the window blinds and the coils of the faucet also keep a line of corners.</p>
 
-    padding_size = ((topbot_pad, topbot_pad), (leftright_pad, leftright_pad))
-    return padding_size
+<h2>Part 2 B.2: Feature Descriptor Extraction</h2>
+ 
+<h3>Extracted features</h3>
+<figure><img src="media/kitchen1_features.png"><figcaption>Kitchen1 40x40 windows and normalized 8x8 descriptors</figcaption></figure>
+<figure><img src="media/kitchen2_features.png"><figcaption>Kitchen2 40x40 windows and normalized 8x8 descriptors</figcaption></figure>
+<figure><img src="media/kitchen3_features.png"><figcaption>Kitchen3 40x40 windows and normalized 8x8 descriptors</figcaption></figure>
+<p>Each 8x8 descriptor keeps the rough layout of its 40x40 window while the fine detail is blurred away. For example, in kitchen2 the window at (571, 500) is the clock on the exhaust showing 05:05, and its descriptor keeps only a bright block on a dark background, with the numbers blurred out. The same label on the side of the upper oven shows up in kitchen1 at (368, 625) and in kitchen2 at (35, 610), and both descriptors have the same bright block in the upper right over a dark area, which is what lets the two be matched in B.3. The first two windows in kitchen1, at (571, 700) and (563, 700), are only 8 pixels apart on the same item on the counter, so they produce almost the same descriptor.</p>
 
-# add padding to image
-def add_padding(image, padding_size):
-    padded_image = np.pad(array=image, pad_width=padding_size, mode="constant", constant_values=0)
-    return padded_image</code></pre>
-
-<li>Flipping the filter</li>
-<p>Convolution applies the filter flipped, so I used <code>np.flip(filter)</code> to flip it.</p>
-<p>As seen in 1.1.py file submitted to Learn dropbox:</p>
-<pre><code class="language-python"># flip filter
-def flip_filter(filter):
-    flipped_filter = np.flip(filter)
-    return flipped_filter</code></pre>
-
-<li>Convolution with 4 for loops</li>
-<p>The outer two loops go over every pixel of the original image, and the inner two loops go over every entry of the flipped filter. Each output pixel is a running sum, <code>sum += flipped[k][l] * padded_image[i+k][j+l]</code>, which I then save with <code>output_image[i][j] = sum</code>.</p>
-<p>As seen in 1.1.py file submitted to Learn dropbox:</p>
-<pre><code class="language-python"># apply the filter through every image pixel
-def convolution_four(grayscale_image, filter):
-    flipped = flip_filter(filter)
-    padded_image = add_padding(grayscale_image, padding_size(filter))
-
-    # creating empty image to put sums into
-    output_image = np.zeros(grayscale_image.shape, np.float64)
-
-    # iterating across original image
-    for i in range(grayscale_image.shape[0]):
-        for j in range(grayscale_image.shape[1]):
-
-            sum = 0
-            # iterating over flipped filter
-            for k in range(flipped.shape[0]):
-                for l in range(flipped.shape[1]):
-                    # summing all flipped filter * pixel values
-                    sum += flipped[k][l] * padded_image[i+k][j+l]
-
-            # saving the sums in the empty image
-            output_image[i][j] = sum
-
-    return output_image</code></pre>
+<h2>Part 2 B.3: Feature Matching</h2>
   
-<li>Convolution with 2 for loops</li>
-<p>I kept the two outer loops, but replaced the inner two loops from the 4 for loop version. For each pixel I take the section of the padded image that the filter covers, <code>group = padded_image[i:i+flipped.shape[0], j:j+flipped.shape[1]]</code>, and then multiply it by the flipped filter and add everything up with <code>np.sum(group * flipped)</code>.</p>
-<p>As seen in 1.1.py file submitted to Learn dropbox:</p>
-<pre><code class="language-python">def convolution_two(grayscale_image, filter):
-    flipped = flip_filter(filter)
-    padded_image = add_padding(grayscale_image, padding_size(filter))
+<h3>Matched features</h3>
+<figure><img src="media/kitchen1_to_kitchen2_matches.png"><figcaption>Kitchen1 to kitchen2 (134 matches)</figcaption></figure>
+<figure><img src="media/kitchen3_to_kitchen2_matches.png"><figcaption>Kitchen3 to kitchen2 (112 matches)</figcaption></figure>
+<p>With a ratio threshold of 0.5, kitchen1 to kitchen2 kept 134 matches and kitchen3 to kitchen2 kept 112. Most of the matches are on the items on the countertop like the pans, bottles, and dishes, since each of those looks different from everything else in the kitchen. The kitchen3 to kitchen2 matches are mostly parallel, close to horizontal lines, which fits the camera turning between two shots of the same wall. The kitchen1 to kitchen2 matches are messier because kitchen1 looks at the corner of the room at an angle. A group of lines starts at the edges of the upper cabinets in kitchen1 and runs down to a drawer at the bottom right of kitchen2. These matches are wrong and are caused by the white cabinet doors and drawers all looking similar. Kitchen3 to kitchen2 has a few of the same kinds of mistakes, with lines from the upper cabinets running down to the drawers. I found that RANSAC removed these mistakes in B.4.</p>
 
-    # creating empty image to put sums into
-    output_image = np.zeros(grayscale_image.shape, np.float64)
+<h2>Part 2 B.4: RANSAC and Automatic Mosaic</h2>
+ 
+<h3>Implementing RANSAC function</h3>
+<p>As seen in B4.py file submitted to Learn dropbox:</p>
+<pre><code class="language-python">def ransac(points1, points2):
+    iterations = 1000
+    threshold = 3
+    best_inliers = np.zeros(len(points1), dtype=bool)
+ 
+    for _ in range(iterations):
+        # homography from 4 random matches
+        sample = np.random.choice(len(points1), 4, replace=False)
+        H, _, _ = computeH(np.take(points1, sample, axis=0), np.take(points2, sample, axis=0))
+ 
+        # inliers are matches that land within threshold pixels of their partner
+        projected = transform(points1, H)
+        errors = np.linalg.norm(projected - points2, axis=1)
+        inliers = errors &lt; threshold
+ 
+        # keeping homography with the most inliers
+        if inliers.sum() &gt; best_inliers.sum():
+            best_inliers = inliers
+ 
+    # final homography from all inliers with least squares
+    H, _, _ = computeH(points1[best_inliers], points2[best_inliers])
+    return H</code></pre>
 
-    # iterating across original image
-    for i in range(grayscale_image.shape[0]):
-        for j in range(grayscale_image.shape[1]):
-            group = padded_image[i:i+flipped.shape[0], j:j+flipped.shape[1]]
-            value = np.sum(group * flipped)
-            output_image[i][j] = value
+<h3>Manual vs Automatic Mosaics</h3>
+<figure><img src="media/kitchen_originals.png"><figcaption>Original images</figcaption></figure>
+<figure><img src="media/kitchen_manual_and_automatic.png"><figcaption>Kitchen mosaic: manual (left) and automatic (right)</figcaption></figure>
+<p>Both mosaics use kitchen2 as the reference, with kitchen1 warped onto the left and kitchen3 onto the right, using the same feathering from A.4. The manual mosaic uses homographies from 8 clicked points per pair, while the automatic mosaic uses the RANSAC homographies, which are fit to every inlier out of the 134 and 112 matches from B.3. At this size the two mosaics look almost the same. In both, the upper cabinets, exhaust, ovens, and countertop line up across all three photos with no doubled edges. However, the main difference is the shape of the canvas. The manual mosaic is about 1820 x 1545 pixels and the automatic one is about 1865 x 1585. The two sets of homographies are slightly different, and that difference grows the farther a point is from kitchen2, so it shows up most at the outer edges (along the left wall of kitchen1 and the faucet side of kitchen3).</p>
 
-    return output_image</code></pre>
-
-<li>Filtering the photo</li>
-<p>I read my photo in grayscale with <code>cv2.imread(image, cv2.IMREAD_GRAYSCALE)</code> and made the three filters <code>dx = np.array([[1,0,-1]])</code>, <code>dy = dx.reshape(-1,1)</code>, and the box filter <code>nine = np.ones((9,9)) / 81.0</code>. Dx and Dy produce negative values, so before saving those outputs I rescaled them to 0–255 by shifting with <code>image - image.min()</code> and scaling with <code>255 * image / image.max()</code>. The box filter blurs the image, Dx picks up vertical edges, and Dy picks up horizontal edges.</p>
-<p>As seen in 1.1.py file submitted to Learn dropbox:</p>
-<pre><code class="language-python"># create filters
-dx = np.array([[1,0,-1]])
-dy = dx.reshape(-1,1)
-nine = np.ones((9,9)) / 81.0</code></pre>
-
-<li>Comparing with scipy</li>
-<p>In order to compare accurately, I made sure to treat boundaries the same for the two-loop, four-loop, and scipy versions. I padded all of them with zeros (black) and made sure the outputs were all the same size by using these scipy parameters: <code>boundary="fill"</code>, <code>fillvalue=0</code>, and <code>mode="same"</code>. I ran the same filters through <code>signal.convolve2d(grayscale_image, dx, mode="same", boundary="fill", fillvalue=0)</code> and checked each result against mine with <code>np.allclose(output_image_2_dx, scipy_dx)</code>. All three filters returned <code>True</code> for both of my versions, meaning the outputs were the same. Padding the images with zeros resulted in dark borders around the box-filtered images and bright lines along the borders of the Dx and Dy outputs.</p>
-</ol>
-
-<h3>Output images using 4 for loop version:</h3>
-<div class="gallery">
-<figure><img src="media/4loops_dx.jpg"><figcaption>Dx</figcaption></figure>
-<figure><img src="media/4loops_dy.jpg"><figcaption>Dy</figcaption></figure>
-<figure><img src="media/4loops_nine.jpg"><figcaption>Box Filter</figcaption></figure>
-</div>
-
-<h3>Output images using 2 for loop version:</h3>
-<div class="gallery">
-<figure><img src="media/2loops_dx.jpg"><figcaption>Dx</figcaption></figure>
-<figure><img src="media/2loops_dy.jpg"><figcaption>Dy</figcaption></figure>
-<figure><img src="media/2loops_nine.jpg"><figcaption>Box Filter</figcaption></figure>
-</div>
-
-<h3>Output images using scipy:</h3>
-<div class="gallery">
-<figure><img src="media/scipy_dx.jpg"><figcaption>Dx</figcaption></figure>
-<figure><img src="media/scipy_dy.jpg"><figcaption>Dy</figcaption></figure>
-<figure><img src="media/scipy_nine.jpg"><figcaption>Box Filter</figcaption></figure>
-</div>
-
-<h3>Runtime Summary</h3>
-<p>I timed each method with <code>time.perf_counter()</code>. Here are the run times:</p> 
-<table><tr><th>Filter</th><th>4 For Loops</th><th>2 For Loops</th><th>Scipy</th></tr>
-<tr><td>Dx</td><td>2.924 seconds</td><td>6.140 seconds</td><td>0.037 seconds</td></tr>
-<tr><td>Dy</td><td>3.709 seconds</td><td>8.764 seconds</td><td>0.034 seconds</td></tr>
-<tr><td>9x9 Box Filter</td><td>58.286 seconds</td><td>8.389 seconds</td><td>0.244 seconds</td></tr>
-</table>
-<p>The runtime was fastest for the SciPy versions because the function runs in compiled C, whereas the four-loop and two-loop versions run in interpreted Python (adds overhead on every step). The 4 for loop version was the slowest by far with the 9×9 box filter, since a bigger filter means more multiplications per pixel, each done one at a time in Python. The 2 for loop version took about the same time regardless of the filter, because its runtime mostly comes from calling NumPy once per pixel, not from the filter size. This is also why the 4 for loop version was faster than the 2 for loop version for the small Dx and Dy filters.</p>
-
-<p><a href="assignment2.html">Return to Assignment 2 Overview</a></p> 
+<p><a href="assignment3.html">Return to Assignment 3 Overview</a></p> 
 </body></html>
