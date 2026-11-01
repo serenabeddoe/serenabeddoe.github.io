@@ -34,7 +34,7 @@ code { font-size: 0.9em; }
 <h1>Assignment 3: Part 2 (B)</h1>
 <p><a href="assignment3.html">Return to Assignment 3 Overview</a></p> 
 
-<h2>Part 1 B.1: Harris Corner Detection</h2>
+<h2>Part 2 B.1: Harris Corner Detection</h2>
 
 <h3>Corners With and Without ANMS</h3>
 <div class="two">
@@ -53,7 +53,7 @@ code { font-size: 0.9em; }
 
 <h2>Part 2 B.2: Feature Descriptor Extraction</h2>
  
-<h3>Extracted features</h3>
+<h3>Extracted Features</h3>
 <figure><img src="media/kitchen1_features.png"><figcaption>Kitchen1 40x40 windows and normalized 8x8 descriptors</figcaption></figure>
 <figure><img src="media/kitchen2_features.png"><figcaption>Kitchen2 40x40 windows and normalized 8x8 descriptors</figcaption></figure>
 <figure><img src="media/kitchen3_features.png"><figcaption>Kitchen3 40x40 windows and normalized 8x8 descriptors</figcaption></figure>
@@ -61,10 +61,10 @@ code { font-size: 0.9em; }
 
 <h2>Part 2 B.3: Feature Matching</h2>
   
-<h3>Matched features</h3>
+<h3>Matched Features</h3>
 <figure><img src="media/kitchen1_to_kitchen2_matches.png"><figcaption>Kitchen1 to kitchen2 (134 matches)</figcaption></figure>
 <figure><img src="media/kitchen3_to_kitchen2_matches.png"><figcaption>Kitchen3 to kitchen2 (112 matches)</figcaption></figure>
-<p>With a ratio threshold of 0.5, kitchen1 to kitchen2 kept 134 matches and kitchen3 to kitchen2 kept 112. Most of the matches are on the items on the countertop like the pans, bottles, and dishes, since each of those looks different from everything else in the kitchen. The kitchen3 to kitchen2 matches are mostly parallel, close to horizontal lines, which fits the camera turning between two shots of the same wall. The kitchen1 to kitchen2 matches are messier because kitchen1 looks at the corner of the room at an angle. A group of lines starts at the edges of the upper cabinets in kitchen1 and runs down to a drawer at the bottom right of kitchen2. These matches are wrong and are caused by the white cabinet doors and drawers all looking similar. Kitchen3 to kitchen2 has a few of the same kinds of mistakes, with lines from the upper cabinets running down to the drawers. I found that RANSAC removed these mistakes in B.4.</p>
+<p>With a ratio threshold of 0.5, kitchen1 to kitchen2 kept 134 matches and kitchen3 to kitchen2 kept 112. Most of the matches are on the items on the countertop like the pans, bottles, and dishes, since each of those looks different from everything else in the kitchen. The kitchen3 to kitchen2 matches are mostly parallel, close to horizontal lines, which fits the camera turning between two shots of the same wall. The kitchen1 to kitchen2 matches are messier because kitchen1 looks at the corner of the room at an angle. A group of lines starts at the edges of the upper cabinets in kitchen1 and runs down to a drawer at the bottom right of kitchen2. These matches are wrong and are caused by the white cabinet doors and drawers all looking similar. Kitchen3 to kitchen2 has a few of the same kinds of mistakes, with lines from the upper cabinets running down to the drawers.</p>
 
 <h2>Part 2 B.4: RANSAC and Automatic Mosaic</h2>
  
