@@ -32,7 +32,7 @@ code { font-size: 0.9em; }
 </head>
 <body>
 <h1>Assignment 3: Part 1 (A)</h1>
-<p><a href="assignment2.html">Return to Assignment 2 Overview</a></p> 
+<p><a href="assignment3.html">Return to Assignment 3 Overview</a></p> 
 
 <h2>Part 1 A.1: Shoot the Pictures</h2>
 <p>Both sets of images were taken from a fixed centre of projection by rotating the camera between shots. Here are my original images:</p>
@@ -70,9 +70,9 @@ code { font-size: 0.9em; }
     return H, a, b</code></pre>
 
 <h3>Correspondences Figures</h3>
-<figure><img src="media/houses1_to_houses2.png"><figcaption>Correspondences between houses 1 and houses 2</figcaption></figure>
+<figure><img src="media/houses1_to_houses2.png"><figcaption>Correspondences between houses1 and houses2</figcaption></figure>
 
-<h3>System of Equations (houses 1 to houses 2):</h3>
+<h3>System of Equations (houses1 to houses2):</h3>
 <pre><code>A =
 [[    326.57     504.96       1.         0.         0.         0.     -9810.15   -15169.07]
  [      0.         0.         0.       326.57     504.96       1.   -160202.64  -247715.38]
@@ -102,7 +102,7 @@ b =
 
 <h2>Part 1 A.3: Warp the Images</h2>
 
-<h3>Implementing warpImageNeartNeighbor function</h3>
+<h3>Implementing warpImageNearestNeighbor function</h3>
 <p>As seen in A2_A3.py file submitted to Learn dropbox:</p>
 <pre><code class="language-python">def inverse_map(image, H):
     xmin, ymin, xmax, ymax = bounding_box(image, H)
@@ -136,7 +136,7 @@ def warpImageNearestNeighbor(image, H):
     out[valid, channels] = 1
     return out</code></pre>
 
-<h3>Implementing warpImageBillinear function</h3>
+<h3>Implementing warpImageBilinear function</h3>
 
 <pre><code class="language-python">def warpImageBilinear(image, H):
     height, width, channels = image.shape
@@ -215,10 +215,10 @@ H (houses2 rectification) =
 <tr><td>Houses1</td><td>4.17 seconds</td><td>3.71 seconds</td></tr>
 <tr><td>Houses2</td><td>2.94 seconds</td><td>3.19 seconds</td></tr>
 </table>
-<p>The zoomed crops come from the centre of each warped image. In houses1, the crop lands on the second floor windows and roofline of the corner townhouse. With nearest neighbour, the diagonal edges of the roof break into stair steps, and the window frames and the white trim below the windows have jagged edges. With bilinear, the same roofline is a clean diagonal and the trim is smooth, but the brick on the wall is a little softer. In houses2, the crop lands on the row of houses farther down the street, with the parked cars and the sidewalk. The difference is much smaller here. Nearest neighbour roughens the edge of the sidewalk and the outlines of the cars, but the two crops look almost the same. This matches how much each photo is warped. Houses1 turns into a trapezoid, while the houses 2 output stays close to its original rectangle, so there is less distortion for nearest neighbour to show.</p>
+<p>The zoomed crops come from the centre of each warped image. In houses1, the crop lands on the second floor windows and roofline of the corner townhouse. With nearest neighbour, the diagonal edges of the roof break into stair steps, and the window frames and the white trim below the windows have jagged edges. With bilinear, the same roofline is a clean diagonal and the trim is smooth, but the brick on the wall is a little softer. In houses2, the crop lands on the row of houses farther down the street, with the parked cars and the sidewalk. The difference is much smaller here. Nearest neighbour roughens the edge of the sidewalk and the outlines of the cars, but the two crops look almost the same. This matches how much each photo is warped. Houses1 turns into a trapezoid, while the houses2 output stays close to its original rectangle, so there is less distortion for nearest neighbour to show.</p>
 <p>In theory, nearest neighbour should be faster because it does one lookup per pixel, while bilinear does four lookups plus the weighting. My timings don't show that though. Nearest neighbour was actually slower on houses1 (4.17 vs. 3.71 seconds) and faster on houses2 (2.94 vs. 3.19 seconds). Both methods share <code>inverse_map</code>, and its <code>transform</code> function loops over every output pixel one at a time in interpreted Python. That loop takes up almost all of the run time, while the interpolation itself is vectorized NumPy, so the gap between the two methods gets lost in run to run variation. What does change the run time is the size of the output. The houses1 output is about 820 x 1100 pixels while houses2 is about 700 x 1100, so houses1 has more pixels to loop over, and both of its times are higher than both of the houses2 times which makes sense.</p>
 
-<h2>A.4: Blend the Images into a Mosaic</h2>
+<h2>Part 1 A.4: Blend the Images into a Mosaic</h2>
 
 <p>Here is a breakdown of the steps I took to make the houses mosaic:</p>
 <ol>
@@ -229,7 +229,7 @@ H (houses2 rectification) =
 <li>Feathering weights</li>
 <p>For each image, I made a weight that is 1 at the centre and falls off linearly to close to 0 at the edges, separately along x and y, and combined them into a 2D weight map with <code>np.outer</code>. I added the weight as an extra channel with <code>np.dstack</code> so it gets warped with the same bilinear warp as the colours, which means each weight lands exactly where its pixel lands.</p>
 <li>Weighted averaging</li>
-<p>I added each warped image onto the canvas at its offset with <code>np.ix_</code>, keeping a running sum of colour * weight and a running sum of the weights. Dividing the two gives me the feathered average. None of the image edges show up as a line in the sky or on the road. Plus, the lamp post that sits inside the overlap, appears only once, so the 8 correspondences lined the two photos up well./p>
+<p>I added each warped image onto the canvas at its offset with <code>np.ix_</code>, keeping a running sum of colour * weight and a running sum of the weights. Dividing the two gives me the feathered average. None of the image edges show up as a line in the sky or on the road. Plus, the lamp post that sits inside the overlap appears only once, so the 8 correspondences lined the two photos up well.</p>
 </ol>
 <figure><img src="media/houses_originals.png"><figcaption>Original images</figcaption></figure>
 <figure><img src="media/houses_mosaic.png"><figcaption>Houses mosaic (houses1 warped into houses2)</figcaption></figure>
