@@ -35,7 +35,7 @@ code { font-size: 0.9em; }
 <p><a href="assignment3.html">Return to Assignment 3 Overview</a></p> 
 
 <h2>Part 1 A.1: Shoot the Pictures</h2>
-<p>Both sets of images were taken from a fixed centre of projection by rotating the camera between shots. Here are my original images:</p>
+<p>I took both sets of images by holding my phone camera to my face and rotating the camera between shots. Here are my original images:</p>
 <figure><img src="media/houses_originals.png"><figcaption>Houses set, used for Part A</figcaption></figure>
 <figure><img src="media/kitchen_originals.png"><figcaption>Kitchen set, used for Part B</figcaption></figure>
 
@@ -216,21 +216,21 @@ H (houses2 rectification) =
 <tr><td>Houses1</td><td>4.17 seconds</td><td>3.71 seconds</td></tr>
 <tr><td>Houses2</td><td>2.94 seconds</td><td>3.19 seconds</td></tr>
 </table>
-<p>The zoomed crops come from the centre of each warped image. In houses1, the crop lands on the second floor windows and roofline of the corner townhouse. With nearest neighbour, the diagonal edges of the roof break into stair steps, and the window frames and the white trim below the windows have jagged edges. With bilinear, the same roofline is a clean diagonal and the trim is smooth, but the brick on the wall is a little softer. In houses2, the crop lands on the row of houses farther down the street, with the parked cars and the sidewalk. The difference is much smaller here. Nearest neighbour roughens the edge of the sidewalk and the outlines of the cars, but the two crops look almost the same. This matches how much each photo is warped. Houses1 turns into a trapezoid, while the houses2 output stays close to its original rectangle, so there is less distortion for nearest neighbour to show.</p>
-<p>In theory, nearest neighbour should be faster because it does one lookup per pixel, while bilinear does four lookups plus the weighting. My timings don't show that though. Nearest neighbour was actually slower on houses1 (4.17 vs. 3.71 seconds) and faster on houses2 (2.94 vs. 3.19 seconds). Both methods share <code>inverse_map</code>, and its <code>transform</code> function loops over every output pixel one at a time in interpreted Python. That loop takes up almost all of the run time, while the interpolation itself is vectorized NumPy, so the gap between the two methods gets lost in run to run variation. What does change the run time is the size of the output. The houses1 output is about 820 x 1100 pixels while houses2 is about 700 x 1100, so houses1 has more pixels to loop over, and both of its times are higher than both of the houses2 times which makes sense.</p>
+<p>The zoomed crops come from the middle of each of the warped images. For houses1, the crop is the windows on the second floor and the roofline of the corner townhouses. Using the nearest neighbour method, the roof breaks into stair steps (diagonal edges) and the window frames have jagged edges. Using the bilinear method, the roofline diagonal is clean with a smooth trim, and softer look to the brick walls. For houses2, the crop is the houses further down in the image with cars and sidewalk. There is a smaller difference here. Using the nearest beighbour methodo, the edge of the sidewalk appears rougher, but the two crops look very similar. This makes sense considering how much each photo is warped where houses1 turned into a trapezoid whereas houses2 stays fairly rectangular. There is much less distortion for nearest neighbour to display. </p>
+<p>The nearest neighbour should in theory be faster than bilinear since nearest neighbour does one lookup per pixel versus bilinear's four lookups plus the weighting. However, my results don't reflect this. The results for nearest neighbour was that it was slower on houses1 and faster on houses2. Both nearest neighbour and bilinear methods use <code>inverse_map</code>, and its <code>transform</code> function individually loops over every output pixel in Python. This loop takes up majority of the run time, while the interpolation itself is vectorized NumPy, so the gap between nearest neighbour and billinear gets lost in the variation from run to run. The run time is also affected by the size of the output. The houses1 output (820 x 1100 pixels) is larger than the houses2 output (700 x 1100), meaning more pixels to loop over. The times for houses1 are higher than houses2 which makes sense considering this.</p>
 
 <h2>Part 1 A.4: Blend the Images into a Mosaic</h2>
 
 <p>Here is a breakdown of the steps I took to make the houses mosaic:</p>
 <ol>
 <li>Choosing a reference</li>
-<p>I left houses2 unwarped by giving it the identity matrix <code>np.eye(3)</code>, so the view straight down the street keeps its original shape, and warped houses1 into its projection with the homography from A.2. </p>
+<p>Houses2 was left unwarped by giving it identity matrix <code>np.eye(3)</code> then I warped houses1 into its projection with homography. </p>
 <li>Finding the mosaic size</li>
-<p>I found the bounding box of every warped image and took the overall minimum and maximum to get the size of the final canvas, so all the images can be warped in one shot.</p>
+<p>I calculated the bounding box of each warped image and took the overall min and max to get the size of the final canvas. This was so that all the images can be warped in one image only.</p>
 <li>Feathering weights</li>
-<p>For each image, I made a weight that is 1 at the centre and falls off linearly to close to 0 at the edges, separately along x and y, and combined them into a 2D weight map with <code>np.outer</code>. I added the weight as an extra channel with <code>np.dstack</code> so it gets warped with the same bilinear warp as the colours, which means each weight lands exactly where its pixel lands.</p>
+<p>For every image, I made a weight that is 1 at the centre and falls off linearly to close to 0 at the edges.m This was done separately along x and y, and then combined them into a 2D weight map using <code>np.outer</code>. I added the weight as an additional channel with <code>np.dstack</code> so it gets warped the same as the colours.</p>
 <li>Weighted averaging</li>
-<p>I added each warped image onto the canvas at its offset with <code>np.ix_</code>, keeping a running sum of colour * weight and a running sum of the weights. Dividing the two gives me the feathered average. None of the image edges show up as a line in the sky or on the road. Plus, the lamp post that sits inside the overlap appears only once, so the 8 correspondences lined the two photos up well.</p>
+<p>Using offsets, I added each warped image onto the canvas using <code>np.ix_</code>, keeping a running sum of colour * weight and a running sum of the weights. By dividing the two, I got the feathered average. None of the image edges show up as a line in the sky or on the road. Plus, the lamp post that sits inside the overlap appears only once, so the 8 correspondences lined the two photos up well.</p>
 </ol>
 <figure><img src="media/houses_originals.png"><figcaption>Original images</figcaption></figure>
 <figure><img src="media/houses_mosaic.png"><figcaption>Houses mosaic (houses1 warped into houses2)</figcaption></figure>
