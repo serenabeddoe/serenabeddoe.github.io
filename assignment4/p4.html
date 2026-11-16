@@ -31,76 +31,21 @@ code { font-size: 0.9em; }
 </style>
 </head>
 <body>
-<h1>Assignment 4: P1</h1>
+<h1>Assignment 4: P4</h1>
 <p><a href="assignment4.html">Return to Assignment 4 Overview</a></p> 
 
-<h2>P1: Fundamental Matrix Estimation From Point Correspondences</h2>
+<h2>P4: Triangulation in Structure From Motion</h2>
 
-<p>The implementations for P1 parts a, c and e can be found in the submitted p1.py file.</p>
+<p>The implementations for P4 parts a, b, c, d and e can be found in the submitted p4.py file.</p>
 
-<h3>Part b: Linear Least-Squares Eight-Point Algorithm</h3>
-<p>To calculate the fundamental matrix, I started by creating a matrix A using the corresponding points from the two images. For each pair of points, I extracted their x and y coordinates and added a row to A using the epipolar constraint. Once I had constructed A, I used <code>np.linalg.svd(A)</code> to perform singular value decomposition. I took the last row of V transpose, which corresponds to the smallest singular value, and reshaped it into a 3x3 matrix.</p>
-<p>Since the fundamental matrix needs to have a rank of 2, I then performed SVD on the resulting matrix. I set the smallest singular value to zero and multiplied the matrices back together to get the final fundamental matrix.</p>
-
-<h4>Fundamental Matrices (LLS)</h4>
-<p>These are the fundamental matrices I calculated for the two datasets using the linear least-squares eight-point algorithm:</p>
-
-<p>Set 1</p>
-<pre><code>F =
-[[ 1.55218081e-06 -8.18161523e-06 -1.50440111e-03]
- [-5.86997052e-06 -3.02892219e-07 -1.13607605e-02]
- [-3.52312036e-03  1.41453881e-02  9.99828068e-01]]</code></pre>
-
-<p>Set 2</p>
-<pre><code>F =
-[[-5.63087200e-06  2.74976583e-05 -6.42650411e-03]
- [-2.77622828e-05 -6.74748522e-06  1.52182033e-02]
- [ 1.07623595e-02 -1.22519240e-02 -9.99730547e-01]]</code></pre>
-
-<h3>Part d: Normalized Eight-Point Algorithm</h3>
-<h4>Fundamental Matrices (Normalized)</h4>
-<p>These are the fundamental matrices I calculated for the two datasets using the normalized eight-point algorithm:</p>
-
-<p>Set 1</p>
-<pre><code>F =
-[[ 7.69564303e-07 -6.28660670e-06  1.04182564e-04]
- [-5.78773950e-06 -4.01132413e-07 -7.58583623e-03]
- [-1.01011620e-03  1.04176782e-02  1.72255185e-01]]</code></pre>
-
-<p>Set 2</p>
-<pre><code>F =
-[[-1.76258641e-07  2.93495132e-06 -1.82141740e-04]
- [ 4.23387000e-06  3.75025436e-07  8.18992840e-03]
- [ 2.75815126e-04 -9.94284870e-03 -2.94298661e-03]]</code></pre>
-
-<h3>Part f: Distance to Epipolar Lines</h3>
-
-<p>To calculate the distance between the points and their corresponding epipolar lines, I started by looping through each pair of points. For each point in the first image, I used the fundamental matrix and the corresponding point in the second image to calculate its epipolar line. I then extracted the three coefficients of the line and used the point-to-line distance formula: d = |ax + by + c| / &radic;(a&sup2; + b&sup2;)</p>
-<p>I added each calculated distance to a list and once all of the points had been checked, I used <code>np.mean</code> to return the average distance. To calculate the distance in the other image, I swapped the point sets and used the transpose of the fundamental matrix.</p>
-
-<h3>Set 1 Epipolar Line Figures</h3>
+<h3>Part f: 3D Reconstruction</h3>
 
 <figure>
-  <img src="media/data_set1_lls.png">
-  <figcaption>Set 1: Epipolar lines using the linear least-squares eight-point algorithm</figcaption>
+  <img src="media/statue_3d.png">
+  <figcaption>3D reconstruction of the statue</figcaption>
 </figure>
 
-<figure>
-  <img src="media/data_set1_normalized.png">
-  <figcaption>Set 1: Epipolar lines using the normalized eight-point algorithm</figcaption>
-</figure>
-
-<h3>Set 2 Epipolar Line Figures</h3>
-
-<figure>
-  <img src="media/data_set2_lls.png">
-  <figcaption>Set 2: Epipolar lines using the linear least-squares eight-point algorithm</figcaption>
-</figure>
-
-<figure>
-  <img src="media/data_set2_normalized.png">
-  <figcaption>Set 2: Epipolar lines using the normalized eight-point algorithm</figcaption>
-</figure>
+<p>Looking at the final reconstruction, I can make out the general shape of the statue for example its head and base. However, there are still some missing areas and scattered points that do not seem to belong to the statue. I think reconstructing a larger scene, such as a house, would be more difficult for a few reasons. A house would have more surfaces and features that need to be matched between images, which increases the chances of incorrect correspondences. There would also be areas that are hidden from certain viewpoints, making it difficult to reconstruct the entire house using only two images. Plus, some surfaces like plain walls or windows, might not have enough distinct features to match accurately. To reconstruct a larger scene like a house, I would likely need more images taken from different angles to capture all of the surfaces and provide enough corresponding points for triangulation.</p>
 
 <p><a href="assignment4.html">Return to Assignment 4 Overview</a></p> 
 </body></html>
