@@ -1,1 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYDE 671 Assignment 3</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  color: #222;
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 0 18px;
+  line-height: 1.5;
+}
+h1, h2 { color: #204c68; }
+h1 { font-size: 28px; }
+h2 { font-size: 22px; margin-top: 42px; }
+h3 { font-size: 18px; margin-top: 28px; }
+img { display: block; max-width: 100%; height: auto; }
+figure { margin: 10px 0 24px; }
+figcaption { color: #555; font-size: 14px; margin-top: 6px; }
+.gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.two { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+table { border-collapse: collapse; margin: 18px 0; }
+th, td { border: 1px solid #bbb; padding: 6px 10px; text-align: left; }
+code { font-size: 0.9em; }
+@media (max-width: 650px) {
+  .gallery, .two { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<h1>Assignment 3: Part 1 (A)</h1>
+<p><a href="assignment3.html">Return to Assignment 3 Overview</a></p> 
 
+<h2>Part 1 A.1: Shoot the Pictures</h2>
+<p>I took both sets of images by holding my phone camera to my face and rotating the camera between shots. Here are my original images:</p>
+<figure><img src="media/houses_originals.png"><figcaption>Houses set, used for Part A</figcaption></figure>
+<figure><img src="media/kitchen_originals.png"><figcaption>Kitchen set, used for Part B</figcaption></figure>
+
+<h2>Part 1 A.2: Recover Homographies</h2>
+
+<h3>Implementing computeH function</h3>
+<p>As seen in A2_A3.py file submitted to Learn dropbox:</p>
+<pre><code class="language-python">def computeH(im1_pts,im2_pts):
+    a = []
+    b = []
+ 
+    # adding 2 equations to the system of equations
+    for (x, y), (xp, yp) in zip(im1_pts, im2_pts):
+        # LHS matrix coefficients
+        a.append([x, y, 1, 0, 0, 0, -xp * x, -xp * y])
+        a.append([0, 0, 0, x, y, 1, -yp * x, -yp * y])
+ 
+        # RHS matrix
+        b.append(xp)
+        b.append(yp)
+ 
+    a = np.array(a)
+    b = np.array(b)
+ 
+    # 16 equations, 8 unknowns, using least squares
+    h = np.linalg.lstsq(a, b, rcond=None)[0]
+    
+    # using 1 as scaling factor
+    H = np.append(h, 1) 
+    # reshaping homography back to 3x3 matrix size 
+    H = H.reshape(3, 3) 
+    return H, a, b</code></pre>
+
+<h3>Correspondences Figures</h3>
+<figure><img src="media/houses1_to_houses2.png"><figcaption>Correspondences between houses1 and houses2</figcaption></figure>
+
+<h3>System of Equations (houses1 to houses2):</h3>
+<pre><code>A =
+[[    326.57     504.96       1.         0.         0.         0.     -9810.15   -15169.07]
+ [      0.         0.         0.       326.57     504.96       1.   -160202.64  -247715.38]
+ [    338.08     388.84       1.         0.         0.         0.    -14698.19   -16905.  ]
+ [      0.         0.         0.       338.08     388.84       1.   -121403.95  -139631.67]
+ [    433.09     570.21       1.         0.         0.         0.    -68701.23   -90453.94]
+ [      0.         0.         0.       433.09     570.21       1.   -242381.05  -319125.6 ]
+ [    484.91     370.61       1.         0.         0.         0.   -102980.31   -78706.9 ]
+ [      0.         0.         0.       484.91     370.61       1.   -169009.1   -129172.1 ]
+ [    521.37     293.84       1.         0.         0.         0.   -128236.18   -72272.26]
+ [      0.         0.         0.       521.37     293.84       1.   -144694.63   -81548.03]
+ [    592.39     543.34       1.         0.         0.         0.   -191748.96  -175874.63]
+ [      0.         0.         0.       592.39     543.34       1.   -314480.16  -288445.28]
+ [    707.54     559.66       1.         0.         0.         0.   -299638.08  -237010.36]
+ [      0.         0.         0.       707.54     559.66       1.   -386476.89  -305698.88]
+ [    754.57     490.56       1.         0.         0.         0.   -349239.96  -227051.08]
+ [      0.         0.         0.       754.57     490.56       1.   -364370.38  -236887.81]]
+ 
+b =
+[ 30.04 490.56  43.48 359.09 158.63 559.66 212.37 348.54 245.96 277.53 323.69 530.87 423.49 546.22 462.84 482.89]</code></pre>
+  
+<h3>Recovered Homography Matrix</h3>
+<pre><code>H =
+[[ 1.551615e+00  1.785683e-02 -4.784131e+02]
+ [ 3.709740e-01  1.364437e+00 -2.181158e+02]
+ [ 7.135134e-04 -4.400863e-05  1.000000e+00]]</code></pre>
+
+<h2>Part 1 A.3: Warp the Images</h2>
+
+<h3>Implementing warpImageNearestNeighbor function</h3>
+<p>As seen in A2_A3.py file submitted to Learn dropbox:</p>
+<pre><code class="language-python">def inverse_map(image, H):
+    xmin, ymin, xmax, ymax = bounding_box(image, H)
+    # grid of output pixel coordinates
+    xs = np.meshgrid(np.arange(xmin, xmax + 1), np.arange(ymin, ymax + 1))[0]
+    ys = np.meshgrid(np.arange(xmin, xmax + 1), np.arange(ymin, ymax + 1))[1]
+    out_pts = np.stack([xs.ravel(), ys.ravel()], axis=1)
+    # inverse homography goes from output back to original
+    src = transform(out_pts, np.linalg.inv(H))
+    src_x, src_y = src.T
+    return src_x.reshape(xs.shape), src_y.reshape(xs.shape)
+ 
+def warpImageNearestNeighbor(image, H):
+    height, width, channels = image.shape
+    src_x, src_y = inverse_map(image, H)
+ 
+    # round to the nearest pixel center
+    x = np.round(src_x).astype(int)
+    y = np.round(src_y).astype(int)
+ 
+    # only keeping output pixels that land inside the source image
+    insideleft = x &gt;= 0
+    insideright = x &lt;= width - 1
+    insidetop = y &gt;= 0
+    insidebottom = y &lt;= height - 1
+    valid = (insideleft &amp; insideright &amp; insidetop &amp; insidebottom)
+    
+    # output with an alpha channel, everything transparent to start
+    out = np.zeros(src_x.shape + (channels + 1,))
+    out[valid, :channels] = image[y[valid], x[valid]]
+    out[valid, channels] = 1
+    return out</code></pre>
+
+<h3>Implementing warpImageBilinear function</h3>
+
+<pre><code class="language-python">def warpImageBilinear(image, H):
+    height, width, channels = image.shape
+    src_x, src_y = inverse_map(image, H)
+ 
+    # only keeping output pixels that land inside the source image
+    insideleft = src_x &gt;= 0
+    insideright = src_x &lt;= width - 1
+    insidetop = src_y &gt;= 0
+    insidebottom = src_y &lt;= height - 1
+    valid = (insideleft &amp; insideright &amp; insidetop &amp; insidebottom)
+ 
+    x = src_x[valid]
+    y = src_y[valid]
+ 
+    # top left neighbour clipped so the bottom right neighbour stays inside the image
+    x0 = np.clip(np.floor(x).astype(int), 0, width - 2)
+    y0 = np.clip(np.floor(y).astype(int), 0, height - 2)
+    x1 = x0 + 1
+    y1 = y0 + 1
+ 
+    # fractional distance from the top left neighbour with an axis added to weight all colour channels
+    dx = np.expand_dims(x - x0, axis=1)
+    dy = np.expand_dims(y - y0, axis=1)
+ 
+    # four neighbouring pixels
+    topleft = image[y0, x0]
+    topright = image[y0, x1]
+    bottomleft = image[y1, x0]
+    bottomright = image[y1, x1]
+ 
+    # weights 
+    weight_l = 1 - dx
+    weight_r = dx
+    weight_t = 1 - dy
+    weight_b = dy
+ 
+    # combining weights andn blending 
+    top = weight_l * topleft + weight_r * topright
+    bottom = weight_l * bottomleft + weight_r* bottomright
+    blended = weight_t * top + weight_b * bottom
+ 
+    # size of the output image
+    height = src_x.shape[0]
+    width = src_x.shape[1]
+ 
+    # colour image, black to start
+    rgb = np.zeros((height, width, channels))
+ 
+    # putting the blended colours into the pixels that have data
+    rgb[valid] = blended
+ 
+    # alpha channel
+    alpha = valid.astype(float)
+ 
+    # stacking colour and alpha 
+    return np.dstack([rgb, alpha])</code></pre>
+
+<h3>Rectified images</h3>
+<figure><img src="media/houses1rectified_warp.png"><figcaption>Houses1 rectified with nearest neighbour and bilinear interpolation</figcaption></figure>
+<figure><img src="media/houses2rectified_warp.png"><figcaption>Houses2 rectified with nearest neighbour and bilinear interpolation</figcaption></figure>
+<p>For houses1, I clicked the 4 corners of the upper left window on the front of the corner townhouse, and for houses2 I clicked the 4 corners of the side of the white trailer. Since both are rectangles in real life, I mapped each set of clicks to a rectangle with the average width and height of the clicked sides, starting at the top left click. After warping, the window and the side of the trailer are both rectangles. Both objects were already close to facing the camera, so they only change slightly, while the rest of each photo moves much more. This is strongest in houses1, where the window is only about 50 x 90 pixels, so a small clicking error spreads across the whole image and turns it into a trapezoid.</p>
+
+<h3>Rectification homographies</h3>
+<pre><code>H (houses1 rectification) =
+[[ 1.532454e+00  1.616403e-01 -9.107441e+01]
+ [ 3.887635e-01  1.602668e+00 -1.626164e+02]
+ [ 6.947046e-04  6.094603e-04  1.000000e+00]]
+ 
+H (houses2 rectification) =
+[[ 1.142715e+00  4.665246e-02 -2.487267e+01]
+ [ 2.084963e-01  1.169052e+00 -5.353969e+01]
+ [ 3.957223e-04  1.234901e-04  1.000000e+00]]</code></pre>
+  
+<h3>Quality and Speed</h3>
+<table><tr><th>Image</th><th>Nearest Neighbour</th><th>Bilinear</th></tr>
+<tr><td>Houses1</td><td>4.17 seconds</td><td>3.71 seconds</td></tr>
+<tr><td>Houses2</td><td>2.94 seconds</td><td>3.19 seconds</td></tr>
+</table>
+<p>The zoomed crops come from the middle of each of the warped images. For houses1, the crop is the windows on the second floor and the roofline of the corner townhouses. Using the nearest neighbour method, the roof breaks into stair steps (diagonal edges) and the window frames have jagged edges. Using the bilinear method, the roofline diagonal is clean with a smooth trim, and softer look to the brick walls. For houses2, the crop is the houses further down in the image with cars and sidewalk. There is a smaller difference here. Using the nearest beighbour methodo, the edge of the sidewalk appears rougher, but the two crops look very similar. This makes sense considering how much each photo is warped where houses1 turned into a trapezoid whereas houses2 stays fairly rectangular. There is much less distortion for nearest neighbour to display. </p>
+<p>The nearest neighbour should in theory be faster than bilinear since nearest neighbour does one lookup per pixel versus bilinear's four lookups plus the weighting. However, my results don't reflect this. The results for nearest neighbour was that it was slower on houses1 and faster on houses2. Both nearest neighbour and bilinear methods use <code>inverse_map</code>, and its <code>transform</code> function individually loops over every output pixel in Python. This loop takes up majority of the run time, while the interpolation itself is vectorized NumPy, so the gap between nearest neighbour and billinear gets lost in the variation from run to run. The run time is also affected by the size of the output. The houses1 output (820 x 1100 pixels) is larger than the houses2 output (700 x 1100), meaning more pixels to loop over. The times for houses1 are higher than houses2 which makes sense considering this.</p>
+
+<h2>Part 1 A.4: Blend the Images into a Mosaic</h2>
+
+<p>Here is a breakdown of the steps I took to make the houses mosaic:</p>
+<ol>
+<li>Choosing a reference</li>
+<p>Houses2 was left unwarped by giving it identity matrix <code>np.eye(3)</code> then I warped houses1 into its projection with homography. </p>
+<li>Finding the mosaic size</li>
+<p>I calculated the bounding box of each warped image and took the overall min and max to get the size of the final canvas. This was so that all the images can be warped in one image only.</p>
+<li>Feathering weights</li>
+<p>For every image, I made a weight that is 1 at the centre and falls off linearly to close to 0 at the edges.m This was done separately along x and y, and then combined them into a 2D weight map using <code>np.outer</code>. I added the weight as an additional channel with <code>np.dstack</code> so it gets warped the same as the colours.</p>
+<li>Weighted averaging</li>
+<p>Using offsets, I added each warped image onto the canvas using <code>np.ix_</code>, keeping a running sum of colour * weight and a running sum of the weights. By dividing the two, I got the feathered average. None of the image edges show up as a line in the sky or on the road. Plus, the lamp post that sits inside the overlap appears only once, so the 8 correspondences lined the two photos up well.</p>
+</ol>
+<figure><img src="media/houses_originals.png"><figcaption>Original images</figcaption></figure>
+<figure><img src="media/houses_mosaic.png"><figcaption>Houses mosaic (houses1 warped into houses2)</figcaption></figure>
+  
+<p><a href="assignment3.html">Return to Assignment 3 Overview</a></p> 
+</body></html>
