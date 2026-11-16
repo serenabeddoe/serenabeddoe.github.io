@@ -1,1 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYDE 671 Assignment 4</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  color: #222;
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 0 18px;
+  line-height: 1.5;
+}
+h1, h2 { color: #204c68; }
+h1 { font-size: 28px; }
+h2 { font-size: 22px; margin-top: 42px; }
+h3 { font-size: 18px; margin-top: 28px; }
+img { display: block; max-width: 100%; height: auto; }
+figure { margin: 10px 0 24px; }
+figcaption { color: #555; font-size: 14px; margin-top: 6px; }
+.gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.two { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+table { border-collapse: collapse; margin: 18px 0; }
+th, td { border: 1px solid #bbb; padding: 6px 10px; text-align: left; }
+code { font-size: 0.9em; }
+@media (max-width: 650px) {
+  .gallery, .two { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<h1>Assignment 4: P2</h1>
+<p><a href="assignment4.html">Return to Assignment 4 Overview</a></p> 
 
+<h2>P2: Matching Homographies for Image Rectification</h2>
+<p>The implementations for P2 parts a, b and c can be found in the submitted p2.py file.</p>
+
+<h3>Part d: Image Rectification</h3>
+
+<figure>
+  <img src="media/data_set1_rectified.png">
+  <figcaption>Rectified image pair showing the corresponding points in blue and epipolar lines in red</figcaption>
+</figure>
+
+<p>Looking at the rectified images, I noticed that the epipolar lines are now horizontal and the corresponding points are at approximately the same vertical positions in both images. This makes it easier to find corresponding points because instead of searching across the entire image, we only need to search horizontally along the corresponding epipolar line. As a result, the search is reduced from two dimensions to one dimension, making it easier to match points between the two images.</p>
+
+<p><a href="assignment4.html">Return to Assignment 4 Overview</a></p>
+</body>
+</html>
