@@ -31,76 +31,46 @@ code { font-size: 0.9em; }
 </style>
 </head>
 <body>
-<h1>Assignment 4: P1</h1>
+<h1>Assignment 4: P3</h1>
 <p><a href="assignment4.html">Return to Assignment 4 Overview</a></p> 
 
-<h2>P1: Fundamental Matrix Estimation From Point Correspondences</h2>
+<h2>P3: The Factorization Method</h2>
 
-<p>The implementations for P1 parts a, c and e can be found in the submitted p1.py file.</p>
+<p>The implementation for P3 part a can be found in the submitted p3.py file.</p>
 
-<h3>Part b: Linear Least-Squares Eight-Point Algorithm</h3>
-<p>To calculate the fundamental matrix, I started by creating a matrix A using the corresponding points from the two images. For each pair of points, I extracted their x and y coordinates and added a row to A using the epipolar constraint. Once I had constructed A, I used <code>np.linalg.svd(A)</code> to perform singular value decomposition. I took the last row of V transpose, which corresponds to the smallest singular value, and reshaped it into a 3x3 matrix.</p>
-<p>Since the fundamental matrix needs to have a rank of 2, I then performed SVD on the resulting matrix. I set the smallest singular value to zero and multiplied the matrices back together to get the final fundamental matrix.</p>
+<h3>Part b: Factorization Method Implementation</h3>
+<p>To implement the factorization method, I started by creating a measurement matrix W using the x and y coordinates of the corresponding points from both images. I then calculated the mean of each row using <code>np.mean</code> and subtracted it from the corresponding row to center the points. Next, I used <code>np.linalg.svd</code> to decompose the measurement matrix. I kept the first three singular values and their corresponding singular vectors, since we are trying to recover a three-dimensional structure. I took the square root of the three singular values and used them to calculate the motion and structure matrices through matrix multiplication.</p>
 
-<h4>Fundamental Matrices (LLS)</h4>
-<p>These are the fundamental matrices I calculated for the two datasets using the linear least-squares eight-point algorithm:</p>
-
-<p>Set 1</p>
-<pre><code>F =
-[[ 1.55218081e-06 -8.18161523e-06 -1.50440111e-03]
- [-5.86997052e-06 -3.02892219e-07 -1.13607605e-02]
- [-3.52312036e-03  1.41453881e-02  9.99828068e-01]]</code></pre>
-
-<p>Set 2</p>
-<pre><code>F =
-[[-5.63087200e-06  2.74976583e-05 -6.42650411e-03]
- [-2.77622828e-05 -6.74748522e-06  1.52182033e-02]
- [ 1.07623595e-02 -1.22519240e-02 -9.99730547e-01]]</code></pre>
-
-<h3>Part d: Normalized Eight-Point Algorithm</h3>
-<h4>Fundamental Matrices (Normalized)</h4>
-<p>These are the fundamental matrices I calculated for the two datasets using the normalized eight-point algorithm:</p>
-
-<p>Set 1</p>
-<pre><code>F =
-[[ 7.69564303e-07 -6.28660670e-06  1.04182564e-04]
- [-5.78773950e-06 -4.01132413e-07 -7.58583623e-03]
- [-1.01011620e-03  1.04176782e-02  1.72255185e-01]]</code></pre>
-
-<p>Set 2</p>
-<pre><code>F =
-[[-1.76258641e-07  2.93495132e-06 -1.82141740e-04]
- [ 4.23387000e-06  3.75025436e-07  8.18992840e-03]
- [ 2.75815126e-04 -9.94284870e-03 -2.94298661e-03]]</code></pre>
-
-<h3>Part f: Distance to Epipolar Lines</h3>
-
-<p>To calculate the distance between the points and their corresponding epipolar lines, I started by looping through each pair of points. For each point in the first image, I used the fundamental matrix and the corresponding point in the second image to calculate its epipolar line. I then extracted the three coefficients of the line and used the point-to-line distance formula: d = |ax + by + c| / &radic;(a&sup2; + b&sup2;)</p>
-<p>I added each calculated distance to a list and once all of the points had been checked, I used <code>np.mean</code> to return the average distance. To calculate the distance in the other image, I swapped the point sets and used the transpose of the fundamental matrix.</p>
-
-<h3>Set 1 Epipolar Line Figures</h3>
-
+<h3>Part c: Full Dataset Reconstruction</h3>
 <figure>
-  <img src="media/data_set1_lls.png">
-  <figcaption>Set 1: Epipolar lines using the linear least-squares eight-point algorithm</figcaption>
+  <img src="media/data_set1_3d.png">
+  <figcaption>3D reconstruction using factorization method compared to the ground truth (full dataset)</figcaption>
 </figure>
 
+<p>Looking at the results, I noticed that the reconstructed points have a different orientation and scale compared to the ground truth. However, the overall distribution of points is similar. This difference occurs because the factorization method recovers the structure in a different coordinate system so the reconstructed points do not necessarily have the same rotation or scale as the original points. The SVD factorization can also introduce an affine transformation ambiguity since multiple different 3D structures could produce the same 2D points.</p>
+
+<h3>Part d: Singular Values (Full dataset)</h3>
+
+<p>The four singular values calculated from the full measurement matrix were:</p>
+<pre><code>[959.5852, 540.4761, 184.4317, 27.9152]</code></pre>
+
+<p>All four singular values are nonzero because there is some noise in the points, so the data does not perfectly match the ideal case. Ideally, I would expect only three nonzero singular values because the measurement matrix is made up of a 4x3 motion matrix multiplied by a 3xN structure matrix. This means the measurement matrix can only have a rank of 3 or less, so the fourth singular value should be zero.</p>
+
+<h3>Part e: Subset Reconstruction</h3>
+
 <figure>
-  <img src="media/data_set1_normalized.png">
-  <figcaption>Set 1: Epipolar lines using the normalized eight-point algorithm</figcaption>
+  <img src="media/data_set1_subset_3d.png">
+  <figcaption>3D reconstruction using factorization method compared to the ground truth (subset only)</figcaption>
 </figure>
 
-<h3>Set 2 Epipolar Line Figures</h3>
+<p>When I used the smaller subset of corresponding points, I noticed that the reconstructed structure no longer matched the ground truth as closely. The points appear to have a different arrangement even after accounting for the rotation and scale differences. Since the subset contains fewer correspondences, there is less information available to estimate the three-dimensional structure. This makes the factorization more sensitive to noise and can result in a less accurate reconstruction.</p>
 
-<figure>
-  <img src="media/data_set2_lls.png">
-  <figcaption>Set 2: Epipolar lines using the linear least-squares eight-point algorithm</figcaption>
-</figure>
+<h3>Part f: Singular Values (Subset only)</h3>
 
-<figure>
-  <img src="media/data_set2_normalized.png">
-  <figcaption>Set 2: Epipolar lines using the normalized eight-point algorithm</figcaption>
-</figure>
+<p>The four singular values calculated using the subset were:</p>
+<pre><code>[264.5440, 210.0607, 7.2192, 5.1286]</code></pre>
+
+<p>Compared to the full dataset, all four singular values decreased. The third singular value decreased significantly from 184.4317 to 7.2192, while the fourth decreased from 27.9152 to 5.1286. I also noticed that the third and fourth singular values are now much closer together. This suggests that the subset contains less information about the third dimension, making it more difficult to distinguish the three-dimensional structure from noise. This helps explain why the subset reconstruction does not match the ground truth as closely.</p>
 
 <p><a href="assignment4.html">Return to Assignment 4 Overview</a></p> 
 </body></html>
