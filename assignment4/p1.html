@@ -58,8 +58,6 @@ code { font-size: 0.9em; }
  [ 1.07623595e-02 -1.22519240e-02 -9.99730547e-01]]</code></pre>
 
 <h3>Part d: Normalized Eight-Point Algorithm</h3>
-<p>For the normalized eight-point algorithm, I started by calculating the mean x and y coordinates of the points in each image using <code>np.mean</code>. I then subtracted the mean coordinates from each point to center them around the origin. Next, I calculated the Euclidean distance between each point and the centroid, and took the average of these distances. I used this average distance to calculate a scale factor so that the points would have an average distance of &radic;2 from the origin. I created a transformation matrix for each image using the mean coordinates and scale factor, and applied these matrices to normalize the points. Once both sets of points were normalized, I used my <code>lls_eight_point_alg</code> function from part a to calculate the fundamental matrix. Then I transformed the fundamental matrix back to the original image coordinates using the transpose of the second transformation matrix and the first transformation matrix.</p>
-
 <h4>Fundamental Matrices (Normalized)</h4>
 <p>These are the fundamental matrices I calculated for the two datasets using the normalized eight-point algorithm:</p>
 
